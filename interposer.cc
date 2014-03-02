@@ -232,6 +232,8 @@ cl_int clGetDeviceIDs (cl_platform_id platform,cl_device_type device_type, cl_ui
         ret_pkt.devices.buff_ptr = (char *) malloc(ret_pkt.devices.buff_len);
         memcpy(ret_pkt.devices.buff_ptr, zmq_msg_data(&reply_buffer), ret_pkt.devices.buff_len);
 	cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
+zmq_close (requester);
+    zmq_ctx_destroy (context);
 	printf("[clGetPlatformIDs interposed] num_devices_found %d\n", ret_pkt.num_devices_found);
 
 	cl_device_id *device_list = (cl_device_id *)malloc(ret_pkt.num_devices_found * sizeof(cl_device_id));
@@ -378,6 +380,9 @@ cl_context clCreateContext (const cl_context_properties *properties,cl_uint num_
 		context_distr->context_tuples[tuple_counter].clhandle = (cl_context)(ret_pkt.context);
 		context_distr->context_tuples[tuple_counter].node = curr_node;
 
+		zmq_close (requester);
+    		zmq_ctx_destroy (context);
+
 		tuple_counter++;
 
 		printf("[clCreateContext interposed] context returned %p\n", ret_pkt.context);
@@ -447,6 +452,8 @@ cl_command_queue clCreateCommandQueue (cl_context context, cl_device_id device,c
 
         cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
 
+zmq_close (requester);
+    zmq_ctx_destroy (context);
 	printf("[clCreateCommandQueue interposed] command queue returned %p\n", ret_pkt.command_queue);
 
 	cl_command_queue_ *command_queue_distr = (cl_command_queue_ *)malloc(sizeof(cl_command_queue_));
@@ -525,7 +532,8 @@ cl_mem clCreateBuffer (cl_context context, cl_mem_flags flags, size_t size, void
         	ret_pkt.data.buff_ptr = (char *) malloc(ret_pkt.data.buff_len);
         	memcpy(ret_pkt.data.buff_ptr, zmq_msg_data(&reply_buffer), ret_pkt.data.buff_len);
         	cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
-
+zmq_close (requester);
+    zmq_ctx_destroy (context);
 		printf("[clCreateBuffer interposed] mem returned %p\n", ret_pkt.mem);
 
 		mem_distr->mem_tuples[i].clhandle = (cl_mem)(ret_pkt.mem);
@@ -633,6 +641,8 @@ cl_program clCreateProgramWithSource (cl_context context, cl_uint count, const c
                 ret_pkt.program_str.buff_ptr = (char *) malloc(ret_pkt.program_str.buff_len);
                 memcpy(ret_pkt.program_str.buff_ptr, zmq_msg_data(&reply_buffer), ret_pkt.program_str.buff_len);
                 cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
+zmq_close (requester);
+    zmq_ctx_destroy (context);
 
 		printf("[clCreateProgramWithSource interposed] program returned %p\n", ret_pkt.program);
 
@@ -744,6 +754,9 @@ cl_int clBuildProgram (cl_program program, cl_uint num_devices, const cl_device_
                 	ret_pkt.options.buff_ptr = (char *) malloc(ret_pkt.options.buff_len);
                 	memcpy(ret_pkt.options.buff_ptr, zmq_msg_data(&reply_buffer), ret_pkt.options.buff_len);
                 	cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
+
+zmq_close (requester);
+    zmq_ctx_destroy (context);
 			printf("[clBuildProgram interposed]clnt_call OK\n");
 			err |= ret_pkt.err;
 
@@ -856,6 +869,9 @@ cl_int clBuildProgram (cl_program program, cl_uint num_devices, const cl_device_
                 ret_pkt.options.buff_ptr = (char *) malloc(ret_pkt.options.buff_len);
                 memcpy(ret_pkt.options.buff_ptr, zmq_msg_data(&reply_buffer), ret_pkt.options.buff_len);
                 cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
+	
+zmq_close (requester);
+    zmq_ctx_destroy (context);
                 printf("[clBuildProgram interposed]clnt_call OK\n");
                 err |= ret_pkt.err;
 
@@ -918,6 +934,8 @@ cl_kernel clCreateKernel (cl_program program,const char *kernel_name, cl_int *er
                 memcpy(ret_pkt.kernel_name.buff_ptr, zmq_msg_data(&reply_buffer), ret_pkt.kernel_name.buff_len);
                 cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
 
+zmq_close (requester);
+    zmq_ctx_destroy (context);
 		printf("[clCreateKernel interposed] kernel returned %p\n", ret_pkt.kernel);
 
 		kernel_distr->kernel_tuples[i].clhandle = (cl_kernel)(ret_pkt.kernel);
@@ -1046,6 +1064,8 @@ cl_int clSetKernelArg (cl_kernel kernel, cl_uint arg_index,size_t arg_size, cons
                 memcpy(ret_pkt.plain_old_data.buff_ptr, zmq_msg_data(&reply_buffer), ret_pkt.plain_old_data.buff_len);
                 cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
 
+zmq_close (requester);
+    zmq_ctx_destroy (context);
 
                 printf("[clSetKernelArg interposed]clnt_call OK\n");
                 err |= ret_pkt.err;
@@ -1128,6 +1148,8 @@ cl_int clEnqueueWriteBuffer (cl_command_queue command_queue, cl_mem buffer,cl_bo
         memcpy(ret_pkt.data.buff_ptr, zmq_msg_data(&reply_buffer), ret_pkt.data.buff_len);
         cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
 
+zmq_close (requester);
+    zmq_ctx_destroy (context);
 	printf("[clEnqueueWriteBuffer interposed] err returned %d\n", ret_pkt.err);
 
 	err = ret_pkt.err;
@@ -1206,7 +1228,8 @@ cl_int clEnqueueReadBuffer (cl_command_queue command_queue, cl_mem buffer,cl_boo
         ret_pkt.data.buff_ptr = (char *) malloc(ret_pkt.data.buff_len);
         memcpy(ret_pkt.data.buff_ptr, zmq_msg_data(&reply_buffer), ret_pkt.data.buff_len);
         cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
-
+zmq_close (requester);    
+zmq_ctx_destroy (context);
 	printf("[clEnqueueReadBuffer interposed] err returned %d\n", ret_pkt.err);
 
 	err = ret_pkt.err;
@@ -1306,6 +1329,8 @@ cl_int clEnqueueNDRangeKernel (cl_command_queue command_queue, cl_kernel kernel,
          memcpy(ret_pkt.global_offset.buff_ptr, zmq_msg_data(&reply_buffer), ret_pkt.global_offset.buff_len);
          cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
 
+zmq_close (requester);
+    zmq_ctx_destroy (context);
 	printf("[clEnqueueNDRangeKernel interposed] err returned %d\n", ret_pkt.err);
 
 	err = ret_pkt.err;

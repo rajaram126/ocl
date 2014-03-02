@@ -422,8 +422,7 @@ void clEnqueueReadBuffer_server(enqueue_read_buffer_ *argp, enqueue_read_buffer_
 
 
 main() {
-
-printf("reached here");
+fprintf(stderr,"reached here");
     void *context = zmq_ctx_new ();
     void *responder = zmq_socket (context, ZMQ_REP);
 
