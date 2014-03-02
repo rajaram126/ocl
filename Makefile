@@ -2,17 +2,14 @@ all: build_all
 
 build_all: build_server build_client
 
-build_server: server.o
-	gcc -o server -lzmq server.o
 
-server.o:
-	g++ -c server.cc -I /opt/AMDAPP/include/ -I ./include/
-        
-build_client: interposer.o
-	g++ -o client -lzmq -lOpenCl client.o
+build_server:
+	g++ -ggdb -I /opt/AMDAPP/include -I ./include -o server server.cc -L/usr/lib64 -L/usr/local/lib -lOpenCL -lzmq
 
-client.o:
-	g++ -c interposer.cc -I /opt/AMDAPP/include/ -I ./include/
+
+build_client:
+	g++ -c interposer.cc -I /opt/AMDAPP/include/ -I ./include/ -fPIC
+	g++ -shared -Wl,-soname,libCLInterposerClient.so.1 -o libCLInterposerClient.so.1.0.1  interposer.o -lzmq
 
 clean:
 	rm -rf *.o server client
