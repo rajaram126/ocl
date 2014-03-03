@@ -20,13 +20,13 @@ void clGetPlatformIDs_server(get_platform_ids_ *argp, get_platform_ids_ *retp){
         err = clGetPlatformIDs(0, NULL, &num_platforms);
 
         if(err != CL_SUCCESS){
-                printf("clGetPlatformIDs failed with err %d\n", err);
+                //fprintf(stderr,"clGetPlatformIDs failed with err %d\n", err);
                 exit(-1);
         }
 
 	retp->err |= err;
 
-        printf("[clGetPlatformIDs_server] Num OpenCL platforms found %d\n", num_platforms);
+        //fprintf(stderr,"[clGetPlatformIDs_server] Num OpenCL platforms found %d\n", num_platforms);
 	retp->num_platforms_found = num_platforms;
 
         if(num_platforms > 0){
@@ -36,14 +36,14 @@ void clGetPlatformIDs_server(get_platform_ids_ *argp, get_platform_ids_ *retp){
 		clGetPlatformIDs(num_platforms, platforms, NULL);
 
                 if(err != CL_SUCCESS){
-                        printf("clGetPlatformIDs failed with err %d\n", err);
+                        //fprintf(stderr,"clGetPlatformIDs failed with err %d\n", err);
                         exit(-1);
                 }
 
 		retp->err |= err;
 
 		for(int i=0; i<num_platforms; i++){
-			printf("[clGetPlatformIDs_server] platforms[%d]=%p\n",i, platforms[i]);
+			//fprintf(stderr,"[clGetPlatformIDs_server] platforms[%d]=%p\n",i, platforms[i]);
 		}
 
 		retp->platforms.buff_ptr = (char *)platforms;
@@ -64,19 +64,19 @@ void clGetDeviceIDs_server(get_device_ids_ *argp, get_device_ids_ *retp){
 
         cl_uint num_devices = 0;
 
-	printf("[clGetDeviceIDs_server] platform %p\n", (cl_platform_id)(argp->platform));
-	printf("[clGetDeviceIDs_server] device_type %d\n", (cl_device_type)(argp->device_type));
+	//fprintf(stderr,"[clGetDeviceIDs_server] platform %p\n", (cl_platform_id)(argp->platform));
+	//fprintf(stderr,"[clGetDeviceIDs_server] device_type %d\n", (cl_device_type)(argp->device_type));
 
 
         err = clGetDeviceIDs((cl_platform_id)(argp->platform), (cl_device_type)(argp->device_type), 0, NULL, &num_devices);
 
         if(err != CL_SUCCESS){
-                printf("clGetDeviceIDs failed with err %d\n", err);
-                exit(-1);
+                //fprintf(stderr,"clGetDeviceIDs failed with err %d\n", err);
+//                exit(-1);
         }
 	retp->err |= err;
 
-        printf("[clGetDeviceIDs_server] Num OpenCL devices found %d\n", num_devices);
+        //fprintf(stderr,"[clGetDeviceIDs_server] Num OpenCL devices found %d\n", num_devices);
 	retp->num_devices_found = num_devices;
 
         if(num_devices > 0){
@@ -86,13 +86,13 @@ void clGetDeviceIDs_server(get_device_ids_ *argp, get_device_ids_ *retp){
 		clGetDeviceIDs((cl_platform_id)(argp->platform), (cl_device_type)(argp->device_type), num_devices, devices, NULL);
 
                 if(err != CL_SUCCESS){
-                        printf("clGetDeviceIDs failed with err %d\n", err);
+                        //fprintf(stderr,"clGetDeviceIDs failed with err %d\n", err);
                         exit(-1);
                 }
 		retp->err |= err;
 
 		for(int i=0; i<num_devices; i++){
-			printf("[clGetDeviceIDs_server] devices[%d]=%p\n",i, devices[i]);
+			//fprintf(stderr,"[clGetDeviceIDs_server] devices[%d]=%p\n",i, devices[i]);
 		}
 
 		retp->devices.buff_ptr = (char *)devices;
@@ -112,24 +112,24 @@ void clCreateContext_server(create_context_ *argp, create_context_ *retp){
 
         cl_context context = 0;
 
-        printf("[clCreateContext_server] Num devices received %d\n", argp->num_devices);
+        //fprintf(stderr,"[clCreateContext_server] Num devices received %d\n", argp->num_devices);
 
 	cl_device_id *devices = (cl_device_id*)(argp->devices.buff_ptr);
 
 	for(int i=0; i<argp->num_devices; i++){
-		printf("[clCreateContext_server] devices[%d] = %p\n", i, devices[i]);
+		//fprintf(stderr,"[clCreateContext_server] devices[%d] = %p\n", i, devices[i]);
 	}
 
         context  = clCreateContext(NULL, (cl_uint)(argp->num_devices), devices, NULL, NULL, &err);
 
         if(err != CL_SUCCESS){
-                printf("clCreateContext failed with err %d\n", err);
+                //fprintf(stderr,"clCreateContext failed with err %d\n", err);
                 exit(-1);
         }
 	retp->err |= err;
 
 	retp->context = (unsigned long)context;
-        printf("[clCreateContext_server] context created %p\n", retp->context);
+        //fprintf(stderr,"[clCreateContext_server] context created %p\n", retp->context);
 
 	retp->devices.buff_ptr = "\0";
 	retp->devices.buff_len = sizeof(char);	
@@ -141,19 +141,19 @@ void clCreateCommandQueue_server(create_command_queue_ *argp, create_command_que
 
         cl_command_queue command_queue = 0;
 
-        printf("[clCreateCommandQueue_server] context %p\n", argp->context);
-        printf("[clCreateCommandQueue_server] device %p\n", argp->device);
+        //fprintf(stderr,"[clCreateCommandQueue_server] context %p\n", argp->context);
+        //fprintf(stderr,"[clCreateCommandQueue_server] device %p\n", argp->device);
 
         command_queue  = clCreateCommandQueue((cl_context)(argp->context), (cl_device_id)(argp->device), 0, &err);
 
         if(err != CL_SUCCESS){
-                printf("clCreateCommandQueue failed with err %d\n", err);
+                //fprintf(stderr,"clCreateCommandQueue failed with err %d\n", err);
                 exit(-1);
         }
 	retp->err = err;
 
 	retp->command_queue = (unsigned long)command_queue;
-        printf("[clCreateCommandQueue_server] command_queue created %p\n", retp->command_queue);
+        //fprintf(stderr,"[clCreateCommandQueue_server] command_queue created %p\n", retp->command_queue);
 
 }
 
@@ -164,7 +164,7 @@ void clCreateBuffer_server(create_buffer_ *argp, create_buffer_ *retp){
 
         cl_mem mem = 0;
 
-        printf("[clCreateBuffer_server] context %p\n", argp->context);
+        //fprintf(stderr,"[clCreateBuffer_server] context %p\n", argp->context);
 
 	cl_mem_flags flags = (cl_mem_flags)(argp->flags);
 	size_t size = (size_t)(argp->size);
@@ -182,7 +182,7 @@ void clCreateBuffer_server(create_buffer_ *argp, create_buffer_ *retp){
         mem  = clCreateBuffer((cl_context)(argp->context), flags, size, host_ptr, &err);
 
         if(err != CL_SUCCESS){
-                printf("clCreateBuffer failed with err %d\n", err);
+                //fprintf(stderr,"clCreateBuffer failed with err %d\n", err);
                 exit(-1);
         }
 	retp->err = err;
@@ -192,7 +192,7 @@ void clCreateBuffer_server(create_buffer_ *argp, create_buffer_ *retp){
 
 	retp->mem = (unsigned long)mem;
 
-        printf("[clCreateBuffer_server] mem created %p\n", retp->mem);
+        //fprintf(stderr,"[clCreateBuffer_server] mem created %p\n", retp->mem);
 
 }
 
@@ -203,12 +203,12 @@ void clCreateProgramWithSource_server(create_program_with_source_ *argp, create_
 
         cl_program program = 0;
 
-        printf("[clCreateProgramWithSource_server] context %p\n", argp->context);
+        //fprintf(stderr,"[clCreateProgramWithSource_server] context %p\n", argp->context);
 
         program  = clCreateProgramWithSource((cl_context)(argp->context), 1, (const char **)&(argp->program_str.buff_ptr), NULL, &err);
 
         if(err != CL_SUCCESS){
-                printf("clCreateProgramWithSource failed with err %d\n", err);
+                //fprintf(stderr,"clCreateProgramWithSource failed with err %d\n", err);
                 exit(-1);
         }
 	retp->err = err;
@@ -218,7 +218,7 @@ void clCreateProgramWithSource_server(create_program_with_source_ *argp, create_
 
 	retp->program = (unsigned long)program;
 
-        printf("[clCreateProgramWithSource_server] program created %p\n", retp->program);
+        //fprintf(stderr,"[clCreateProgramWithSource_server] program created %p\n", retp->program);
 
 }
 
@@ -227,8 +227,12 @@ void clBuildProgram_server(build_program_ *argp, build_program_ *retp){
 
 	cl_int err = CL_SUCCESS;
 
-        printf("[clBuildProgram_server] program %p\n", argp->program);
-	printf("[clBuildProgram_server] options %s\n", argp->options.buff_ptr);
+        //fprintf(stderr,"[clBuildProgram_server] program %p\n", argp->program);
+	//fprintf(stderr,"[clBuildProgram_server] options %s\n", argp->options.buff_ptr);
+	 //fprintf(stderr,"[clBuildProgram_server] options length %d\n", argp->options.buff_len);
+	if(!argp->options.buff_len) {
+	argp->options.buff_ptr = "";
+	}
 
 	if(argp->all_devices){
 		err  = clBuildProgram((cl_program)(argp->program), 0, NULL, (const char *)(argp->options.buff_ptr), NULL, NULL);
@@ -236,7 +240,7 @@ void clBuildProgram_server(build_program_ *argp, build_program_ *retp){
 		err  = clBuildProgram((cl_program)(argp->program), (argp->num_devices), (cl_device_id *)(argp->devices.buff_ptr), (const char *)(argp->options.buff_ptr), NULL, NULL);
 	}
         if(err != CL_SUCCESS){
-                printf("clBuildProgram failed with err %d\n", err);
+                //fprintf(stderr,"clBuildProgram failed with err %d\n", err);
                 exit(-1);
         }
 	retp->err = err;
@@ -256,9 +260,9 @@ void clCreateKernel_server(create_kernel_ *argp, create_kernel_ *retp){
 
         cl_kernel kernel = 0;
 
-        printf("[clCreateKernel_server] program %p\n", argp->program);
-        printf("[clCreateKernel_server] kernel_name %s\n", argp->kernel_name.buff_ptr);
-        printf("[clCreateKernel_server] kernel_name length %d\n", argp->kernel_name.buff_len);
+        //fprintf(stderr,"[clCreateKernel_server] program %p\n", argp->program);
+        //fprintf(stderr,"[clCreateKernel_server] kernel_name %s\n", argp->kernel_name.buff_ptr);
+        //fprintf(stderr,"[clCreateKernel_server] kernel_name length %d\n", argp->kernel_name.buff_len);
 
 	char *kernel_name = (char *)calloc(argp->kernel_name.buff_len + 1, sizeof(char));
 	for(int i=0; i<argp->kernel_name.buff_len; i++){
@@ -268,14 +272,14 @@ void clCreateKernel_server(create_kernel_ *argp, create_kernel_ *retp){
 
         //kernel  = clCreateKernel((cl_program)(argp->program), (const char *)(argp->kernel_name.buff_ptr), &err);
         //if(err != CL_SUCCESS){
-        //        printf("clCreateKernel failed with err %d\n", err);
+        //        //fprintf(stderr,"clCreateKernel failed with err %d\n", err);
         //        exit(-1);
         //}
 
 	err = CL_SUCCESS;
         kernel  = clCreateKernel((cl_program)(argp->program), kernel_name, &err);
         if(err != CL_SUCCESS){
-                printf("clCreateKernel failed with err %d\n", err);
+                //fprintf(stderr,"clCreateKernel failed with err %d\n", err);
                 exit(-1);
         }
 
@@ -286,7 +290,7 @@ void clCreateKernel_server(create_kernel_ *argp, create_kernel_ *retp){
 
 	retp->kernel = (unsigned long)kernel;
 
-        printf("[clCreateKernel_server] kernel created %p\n", retp->kernel);
+        //fprintf(stderr,"[clCreateKernel_server] kernel created %p\n", retp->kernel);
 
 }
 
@@ -296,14 +300,14 @@ void clSetKernelArg_server(set_kernel_arg_ *argp, set_kernel_arg_ *retp){
 
         cl_kernel kernel = 0;
 
-        printf("[clSetKernelArg_server] kernel %p\n", argp->kernel);
+        //fprintf(stderr,"[clSetKernelArg_server] kernel %p\n", argp->kernel);
 
 	if(argp->is_null_arg){
 		err  = clSetKernelArg((cl_kernel)(argp->kernel), argp->arg_index, argp->arg_size, NULL);
 	} else if (argp->is_clobj) {
 		if(argp->is_mem){
 			cl_mem mem = (cl_mem)(argp->mem);
-			printf("[clSetKernelArg_server] mem %p\n", mem);
+			//fprintf(stderr,"[clSetKernelArg_server] mem %p\n", mem);
 			assert(argp->arg_size == sizeof(cl_mem));
 			err = clSetKernelArg((cl_kernel)(argp->kernel), argp->arg_index, sizeof(cl_mem), (void *)&mem);
 		} else if (argp->is_image){
@@ -324,7 +328,7 @@ void clSetKernelArg_server(set_kernel_arg_ *argp, set_kernel_arg_ *retp){
 	}
 
         if(err != CL_SUCCESS){
-                printf("clCreateKernel failed with err %d\n", err);
+                //fprintf(stderr,"clCreateKernel failed with err %d\n", err);
                 exit(-1);
         }
 	retp->err = err;
@@ -338,13 +342,13 @@ void clEnqueueWriteBuffer_server(enqueue_write_buffer_ *argp, enqueue_write_buff
 
 	cl_int err = CL_SUCCESS;
 
-        printf("[clEnqueueWriteBuffer_server] mem %p\n", argp->mem);
-        printf("[clEnqueueWriteBuffer_server] command queue %p\n", argp->command_queue);
+        //fprintf(stderr,"[clEnqueueWriteBuffer_server] mem %p\n", argp->mem);
+        //fprintf(stderr,"[clEnqueueWriteBuffer_server] command queue %p\n", argp->command_queue);
 
         err  = clEnqueueWriteBuffer((cl_command_queue)(argp->command_queue), (cl_mem)(argp->mem), argp->blocking, argp->offset, argp->size, (void *)(argp->data.buff_ptr), 0, NULL, NULL);
 
         if(err != CL_SUCCESS){
-                printf("clEnqueueWriteBuffer failed with err %d\n", err);
+                //fprintf(stderr,"clEnqueueWriteBuffer failed with err %d\n", err);
                 exit(-1);
         }
 	retp->err = err;
@@ -352,7 +356,7 @@ void clEnqueueWriteBuffer_server(enqueue_write_buffer_ *argp, enqueue_write_buff
 	retp->data.buff_ptr = "\0";
 	retp->data.buff_len = sizeof(char);
 
-        printf("[clEnqueueWriteBuffer_server]err returned %d\n", retp->err);
+        //fprintf(stderr,"[clEnqueueWriteBuffer_server]err returned %d\n", retp->err);
 
 }
 
@@ -362,8 +366,8 @@ void clEnqueueNDRangeKernel_server(enqueue_ndrange_kernel_ *argp, enqueue_ndrang
 
 	cl_int err = CL_SUCCESS;
 
-        printf("[clEnqueueNDRangeKernel_server] kernel %p\n", argp->kernel);
-        printf("[clEnqueueNDRangeKernel_server] command queue %p\n", argp->command_queue);
+        //fprintf(stderr,"[clEnqueueNDRangeKernel_server] kernel %p\n", argp->kernel);
+        //fprintf(stderr,"[clEnqueueNDRangeKernel_server] command queue %p\n", argp->command_queue);
 
 	size_t *global_work_offset=NULL, *local_work_size=NULL;
 
@@ -379,7 +383,7 @@ void clEnqueueNDRangeKernel_server(enqueue_ndrange_kernel_ *argp, enqueue_ndrang
         err  = clEnqueueNDRangeKernel((cl_command_queue)(argp->command_queue), (cl_kernel)(argp->kernel), argp->work_dim, (const size_t *)global_work_offset, (const size_t *)(argp->global_size.buff_ptr), (const size_t *)local_work_size, 0, NULL, NULL);
 
         if(err != CL_SUCCESS){
-                printf("clEnqueueNDRangeKernel failed with err %d\n", err);
+                //fprintf(stderr,"clEnqueueNDRangeKernel failed with err %d\n", err);
                 exit(-1);
         }
 	retp->err = err;
@@ -393,7 +397,7 @@ void clEnqueueNDRangeKernel_server(enqueue_ndrange_kernel_ *argp, enqueue_ndrang
 	retp->local_size.buff_ptr = "\0";
 	retp->local_size.buff_len = sizeof(char);
 
-        printf("[clEnqueueNDRangeKernel_server]err returned %d\n", retp->err);
+        //fprintf(stderr,"[clEnqueueNDRangeKernel_server]err returned %d\n", retp->err);
 
 }
 
@@ -401,28 +405,28 @@ void clEnqueueReadBuffer_server(enqueue_read_buffer_ *argp, enqueue_read_buffer_
 
 	cl_int err = CL_SUCCESS;
 
-        printf("[clEnqueueReadBuffer_server] mem %p\n", argp->mem);
-        printf("[clEnqueueReadBuffer_server] command queue %p\n", argp->command_queue);
+        //fprintf(stderr,"[clEnqueueReadBuffer_server] mem %p\n", argp->mem);
+        //fprintf(stderr,"[clEnqueueReadBuffer_server] command queue %p\n", argp->command_queue);
 
 	void *ptr = malloc(argp->size);
         err  = clEnqueueReadBuffer((cl_command_queue)(argp->command_queue), (cl_mem)(argp->mem), argp->blocking, argp->offset, argp->size, ptr, 0, NULL, NULL);
 
         if(err != CL_SUCCESS){
-                printf("clEnqueueReadBuffer failed with err %d\n", err);
+                //fprintf(stderr,"clEnqueueReadBuffer failed with err %d\n", err);
                 exit(-1);
         }
 	retp->err = err;
 
 	retp->data.buff_ptr = (char *)ptr;
 	retp->data.buff_len = argp->size;
-
-        printf("[clEnqueueReadBuffer_server]err returned %d\n", retp->err);
+	//fprintf(stderr,"[clEnqueueReadBuffer_server] output %s\n",retp->data.buff_ptr);
+        //fprintf(stderr,"[clEnqueueReadBuffer_server]err returned %d\n", retp->err);
 
 }
 
 
 main() {
-fprintf(stderr,"reached here");
+//fprintf(stderr,"reached here");
     void *context = zmq_ctx_new ();
     void *responder = zmq_socket (context, ZMQ_REP);
 
@@ -436,12 +440,15 @@ fprintf(stderr,"reached here");
 		zmq_msg_init(&message_header);
 		zmq_msg_recv(&message_header, responder, 0);
 		header = (invocation_header *) zmq_msg_data(&message_header);
+		fprintf(stderr,"\ngot %d\n",header->api_id);
 		
 		switch(header->api_id) {
 			case GET_PLATFORM_IDS: {
 						get_platform_ids_  arg_pkt,ret_pkt;
 						
 						zmq_msg_t message,message_buffer,reply,reply_buffer;
+						zmq_msg_init(&message);
+						zmq_msg_init(&message_buffer);
 						zmq_msg_recv(&message, responder, 0);
 						arg_pkt = * (get_platform_ids_*) zmq_msg_data(&message);
 						zmq_msg_recv(&message_buffer, responder, 0);
@@ -461,6 +468,8 @@ fprintf(stderr,"reached here");
 			case GET_DEVICE_IDS : {
 						get_device_ids_  arg_pkt,ret_pkt;
 						zmq_msg_t message,message_buffer,reply,reply_buffer;
+						zmq_msg_init(&message);
+                                                zmq_msg_init(&message_buffer);
 						zmq_msg_recv(&message, responder, 0);
 						arg_pkt = * (get_device_ids_*) zmq_msg_data(&message);
 						zmq_msg_recv(&message_buffer, responder, 0);
@@ -480,6 +489,8 @@ fprintf(stderr,"reached here");
 			case CREATE_CONTEXT : {
 						create_context_  arg_pkt,ret_pkt;
 						zmq_msg_t message,message_buffer,reply,reply_buffer;
+						zmq_msg_init(&message);
+                                                zmq_msg_init(&message_buffer);
 						zmq_msg_recv(&message, responder, 0);
 						arg_pkt = * (create_context_*) zmq_msg_data(&message);
 						zmq_msg_recv(&message_buffer, responder, 0);
@@ -499,6 +510,8 @@ fprintf(stderr,"reached here");
 			case CREATE_COMMAND_QUEUE: {
 							create_command_queue_ arg_pkt,ret_pkt;
 							zmq_msg_t message,message_buffer,reply,reply_buffer;
+							zmq_msg_init(&message);
+                                                zmq_msg_init(&message_buffer);
 							zmq_msg_recv(&message, responder, 0);
 							arg_pkt = * (create_command_queue_*) zmq_msg_data(&message);
 							zmq_msg_recv(&message_buffer, responder, 0);
@@ -518,6 +531,8 @@ fprintf(stderr,"reached here");
 			case CREATE_BUFFER: {
 							create_buffer_ arg_pkt,ret_pkt;
 							zmq_msg_t message,message_buffer,reply,reply_buffer;
+							zmq_msg_init(&message);
+                                                zmq_msg_init(&message_buffer);
 							zmq_msg_recv(&message, responder, 0);
 							arg_pkt = * (create_buffer_*) zmq_msg_data(&message);
 							zmq_msg_recv(&message_buffer, responder, 0);
@@ -537,6 +552,8 @@ fprintf(stderr,"reached here");
 			case CREATE_PROGRAM_WITH_SOURCE: {
 							create_program_with_source_ arg_pkt,ret_pkt;
 							zmq_msg_t message,message_buffer,reply,reply_buffer;
+							zmq_msg_init(&message);
+                                                zmq_msg_init(&message_buffer);
 							zmq_msg_recv(&message, responder, 0);
 							arg_pkt = * (create_program_with_source_*) zmq_msg_data(&message);
 							zmq_msg_recv(&message_buffer, responder, 0);
@@ -557,6 +574,9 @@ fprintf(stderr,"reached here");
 			case BUILD_PROGRAM_AUX:		{
 							build_program_ arg_pkt,ret_pkt;
 							zmq_msg_t message,message_buffer,message_buffer_aux,reply,reply_buffer;
+							zmq_msg_init(&message);
+                                                zmq_msg_init(&message_buffer);
+                                                zmq_msg_init(&message_buffer_aux);
 							zmq_msg_recv(&message, responder, 0);
 							arg_pkt = * (build_program_*) zmq_msg_data(&message);
 							zmq_msg_recv(&message_buffer, responder, 0);
@@ -578,6 +598,8 @@ fprintf(stderr,"reached here");
 			case CREATE_KERNEL: 		{
 							create_kernel_ arg_pkt,ret_pkt;
 							zmq_msg_t message,message_buffer,reply,reply_buffer;
+							zmq_msg_init(&message);
+                                                zmq_msg_init(&message_buffer);
 							zmq_msg_recv(&message, responder, 0);
 							arg_pkt = * (create_kernel_*) zmq_msg_data(&message);
 							zmq_msg_recv(&message_buffer, responder, 0);
@@ -597,6 +619,8 @@ fprintf(stderr,"reached here");
 			case SET_KERNEL_ARG:  		{
 							 set_kernel_arg_ arg_pkt,ret_pkt;
 							zmq_msg_t message,message_buffer,reply,reply_buffer;
+							zmq_msg_init(&message);
+                                                zmq_msg_init(&message_buffer);
 							zmq_msg_recv(&message, responder, 0);
 							arg_pkt = * (set_kernel_arg_*) zmq_msg_data(&message);
 							zmq_msg_recv(&message_buffer, responder, 0);
@@ -616,6 +640,8 @@ fprintf(stderr,"reached here");
 			case ENQUEUE_WRITE_BUFFER: 	{
 							enqueue_write_buffer_ arg_pkt,ret_pkt;
 							zmq_msg_t message,message_buffer,reply,reply_buffer;
+							zmq_msg_init(&message);
+                                                zmq_msg_init(&message_buffer);
 							zmq_msg_recv(&message, responder, 0);
 							arg_pkt = * (enqueue_write_buffer_*) zmq_msg_data(&message);
 							zmq_msg_recv(&message_buffer, responder, 0);
@@ -635,6 +661,8 @@ fprintf(stderr,"reached here");
 			case ENQUEUE_READ_BUFFER:	{
 						 	enqueue_read_buffer arg_pkt,ret_pkt;
 							zmq_msg_t message,message_buffer,reply,reply_buffer;
+							zmq_msg_init(&message);
+                                                zmq_msg_init(&message_buffer);
 							zmq_msg_recv(&message, responder, 0);
 							arg_pkt = * (enqueue_read_buffer*) zmq_msg_data(&message);
 							zmq_msg_recv(&message_buffer, responder, 0);
@@ -654,6 +682,10 @@ fprintf(stderr,"reached here");
 			case ENQUEUE_NDRANGE_KERNEL:	{
 							enqueue_ndrange_kernel_ arg_pkt,ret_pkt;
 							zmq_msg_t message,message_buffer,message_buffer_aux,message_buffer_aux2,reply,reply_buffer;
+							zmq_msg_init(&message);
+                                                zmq_msg_init(&message_buffer);
+							zmq_msg_init(&message_buffer_aux);
+                                                zmq_msg_init(&message_buffer_aux2);
 							zmq_msg_recv(&message, responder, 0);
 							arg_pkt = * (enqueue_ndrange_kernel_*) zmq_msg_data(&message);
 							zmq_msg_recv(&message_buffer, responder, 0);

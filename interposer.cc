@@ -125,7 +125,9 @@ cl_int clGetPlatformIDs (cl_uint num_entries, cl_platform_id *platforms, cl_uint
 			platforms_per_node.insert(std::pair<int, char*>(i, platforms_found_curr_node));
 
 			for(int j=0; j<num_platforms_found_curr_node; j++){
+	#ifdef DEBUG
 				printf("[clGetPlatformIDs interposed] platforms[%d]=%p\n", j, *((cl_platform_id*)platforms_found_curr_node+j));
+	 #endif
 			}
 		}
 	zmq_close (requester);
@@ -166,7 +168,9 @@ cl_int clGetPlatformIDs (cl_uint num_entries, cl_platform_id *platforms, cl_uint
 			cl_platform_id_ *platform_distr = (cl_platform_id_ *)malloc(sizeof(cl_platform_id_));
 			platform_distr->node = nodes[i];
 			platform_distr->clhandle = platforms_curr_node[j];
+			#ifdef DEBUG
 			printf("[clGetPlatformIDs interposed] platforms[%d] = %p\n", num_entries_found + j, platform_distr->clhandle);
+	 #endif
 		 	platforms[num_entries_found + j] = (cl_platform_id)platform_distr;	
 		}
 		num_entries_found += num_entries_needed;
@@ -234,7 +238,9 @@ cl_int clGetDeviceIDs (cl_platform_id platform,cl_device_type device_type, cl_ui
 	cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
 zmq_close (requester);
     zmq_ctx_destroy (context);
+	#ifdef DEBUG
 	printf("[clGetPlatformIDs interposed] num_devices_found %d\n", ret_pkt.num_devices_found);
+	 #endif
 
 	cl_device_id *device_list = (cl_device_id *)malloc(ret_pkt.num_devices_found * sizeof(cl_device_id));
 	char *device_list_returned = ret_pkt.devices.buff_ptr;
@@ -245,7 +251,9 @@ zmq_close (requester);
 
 		for(int i=0; i<num_devices_found; i++){
 			device_list[i] = *((cl_device_id*)device_list_returned+i);
+			#ifdef DEBUG
 			printf("[clGetDeviceIDs interposed] devices[%d]=%p\n", i, device_list[i]);
+			 #endif
 		}
 	}
 
@@ -269,7 +277,9 @@ zmq_close (requester);
 		cl_device_id_ *device_distr = (cl_device_id_ *)malloc(sizeof(cl_device_id_));
 		device_distr->node = node;
 		device_distr->clhandle = device_list[i];
+		#ifdef DEBUG
 		printf("[clGetDeviceIDs interposed] devices[%d] = %p\n", i, device_distr->clhandle);
+		 #endif
 		devices[i] = (cl_device_id)device_distr;	
 
 	}	
@@ -287,8 +297,9 @@ cl_context clCreateContext (const cl_context_properties *properties,cl_uint num_
 		*errcode_ret = CL_INVALID_VALUE;
 		return 0;
 	}
-
+	#ifdef DEBUG
 	printf("[clCreateContext interposed] num_devices %d\n", num_devices);
+	 #endif
 
 	cl_int err = CL_SUCCESS;	
 
@@ -317,7 +328,9 @@ cl_context clCreateContext (const cl_context_properties *properties,cl_uint num_
 	}
 
 	int num_context_tuples = devicevector_per_node.size();
+	#ifdef DEBUG
 	printf("[clCreateContext interposed] num_context_tuples %d\n", num_context_tuples);
+	 #endif
 
 	cl_context_ *context_distr = (cl_context_ *)malloc(sizeof(cl_context_));
 	context_distr->context_tuples = (cl_context_elem_ *)malloc(sizeof(cl_context_elem_)*num_context_tuples);
@@ -344,7 +357,9 @@ cl_context clCreateContext (const cl_context_properties *properties,cl_uint num_
 			itv++){
 
 			device_list[device_count++] = (*itv);
+			#ifdef DEBUG
 			printf("[clCreateContext interposed] clhandle %p\n", (*itv));
+			 #endif
 
 		}
 		assert(devicevector.size() == device_count);
@@ -384,13 +399,14 @@ cl_context clCreateContext (const cl_context_properties *properties,cl_uint num_
     		zmq_ctx_destroy (context);
 
 		tuple_counter++;
-
+		#ifdef DEBUG
 		printf("[clCreateContext interposed] context returned %p\n", ret_pkt.context);
-		err |= ret_pkt.err;
+		 #endif
+	//	err |= ret_pkt.err;
 
 	}
 
-	*errcode_ret = err;
+	//*errcode_ret = err;
 
 	return (cl_context)context_distr;
 }
@@ -454,12 +470,14 @@ cl_command_queue clCreateCommandQueue (cl_context context, cl_device_id device,c
 
 zmq_close (requester);
     zmq_ctx_destroy (context);
+	#ifdef DEBUG
 	printf("[clCreateCommandQueue interposed] command queue returned %p\n", ret_pkt.command_queue);
+	 #endif
 
 	cl_command_queue_ *command_queue_distr = (cl_command_queue_ *)malloc(sizeof(cl_command_queue_));
 	command_queue_distr->clhandle = (cl_command_queue)(ret_pkt.command_queue);
 	command_queue_distr->node = device_node;
-	*errcode_ret = ret_pkt.err;
+	//*errcode_ret = ret_pkt.err;
 	return (cl_command_queue)command_queue_distr;
 
 }
@@ -478,8 +496,10 @@ cl_mem clCreateBuffer (cl_context context, cl_mem_flags flags, size_t size, void
 	mem_distr->num_mem_tuples = num_tuples;
 
 	//WORKAROUND
+	#ifdef DEBUG
 	printf("[clCreateBuffer interposed] mem_distr %p\n", mem_distr);
 	printf("[clCreateBuffer interposed] num_tuples %d\n", num_tuples);
+	 #endif
 	mems_created.push_back(mem_distr);
 
 	bool send_data = flags & CL_MEM_COPY_HOST_PTR;
@@ -487,10 +507,14 @@ cl_mem clCreateBuffer (cl_context context, cl_mem_flags flags, size_t size, void
 	for(int i=0; i<context_distr->num_context_tuples; i++){
 
 		char *node = context_distr->context_tuples[i].node;
+		#ifdef DEBUG
 		printf("[clCreateBuffer interposed] node %s\n", node);
+		 #endif
 
 		cl_context context_clhandle = context_distr->context_tuples[i].clhandle;
+		#ifdef DEBUG
 		printf("[clCreateBuffer interposed] context %p\n", context_clhandle);
+		 #endif
 
 		
 		create_buffer_ arg_pkt, ret_pkt;
@@ -534,19 +558,24 @@ cl_mem clCreateBuffer (cl_context context, cl_mem_flags flags, size_t size, void
         	cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
 zmq_close (requester);
     zmq_ctx_destroy (context);
+		#ifdef DEBUG
 		printf("[clCreateBuffer interposed] mem returned %p\n", ret_pkt.mem);
-
+		 #endif
 		mem_distr->mem_tuples[i].clhandle = (cl_mem)(ret_pkt.mem);
 		mem_distr->mem_tuples[i].node = node;
+		#ifdef DEBUG
 		printf("[clCreateBuffer interposed] mem_distr->mem_tuples[%d].clhandle %p\n",i, mem_distr->mem_tuples[i].clhandle);
 		printf("[clCreateBuffer interposed] mem_distr->mem_tuples[%d].node %s\n",i, mem_distr->mem_tuples[i].node);
+		 #endif
 		err |= ret_pkt.err;
 
 	}
 
-	*errcode_ret = err;
+	//*errcode_ret = err;
+	#ifdef DEBUG
 	printf("[clCreateBuffer interposed] cl_mem_ * returned %p\n", mem_distr);
 	printf("[clCreateBuffer interposed] mem_distr->num_mem_tuples %d\n", mem_distr->num_mem_tuples);
+	 #endif
 	return (cl_mem)mem_distr;
 }
 
@@ -579,7 +608,9 @@ cl_program clCreateProgramWithSource (cl_context context, cl_uint count, const c
 		program_str_size += lengths[i];	
 	    }	    
 	}
+	#ifdef DEBUG
 	printf("[clCreateProgramWithSource interposed] program_str_size %d\n", program_str_size);
+	 #endif
 
 	char *program_str = (char *)malloc(program_str_size);
 	int program_str_offset = 0;
@@ -609,11 +640,14 @@ cl_program clCreateProgramWithSource (cl_context context, cl_uint count, const c
 	for(int i=0; i<context_distr->num_context_tuples; i++){
 
 		char *node = context_distr->context_tuples[i].node;
+		#ifdef DEBUG
 		printf("[clCreateProgramWithSource interposed] node %s\n", node);
+		 #endif
 
 		cl_context context_clhandle = context_distr->context_tuples[i].clhandle;
+		#ifdef DEBUG
 		printf("[clCreateProgramWithSource interposed] context %p\n", context_clhandle);
-
+		 #endif
 		create_program_with_source_ arg_pkt, ret_pkt;
 
 		arg_pkt.context = (unsigned long)context_clhandle;
@@ -643,21 +677,22 @@ cl_program clCreateProgramWithSource (cl_context context, cl_uint count, const c
                 cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
 zmq_close (requester);
     zmq_ctx_destroy (context);
-
+		#ifdef DEBUG
 		printf("[clCreateProgramWithSource interposed] program returned %p\n", ret_pkt.program);
+		 #endif
 
 		program_distr->program_tuples[i].clhandle = (cl_program)(ret_pkt.program);
 		program_distr->program_tuples[i].node = node;
-
+		#ifdef DEBUG
 		printf("[clCreateProgramWithSource interposed] program_tuple[%d].clhandle %p\n", i, program_distr->program_tuples[i].clhandle);
 		printf("[clCreateProgramWithSource interposed] program_tuple[%d].node %s\n", i, program_distr->program_tuples[i].node);
-
+		 #endif
 		err |= ret_pkt.err;
 
 	}
 
 
-	*errcode_ret = err;
+//	*errcode_ret = err;
 	return (cl_program)program_distr;
 
 	//*errcode_ret = CL_SUCCESS;
@@ -675,9 +710,10 @@ cl_int clBuildProgram (cl_program program, cl_uint num_devices, const cl_device_
         cl_program_ *program_distr = (cl_program_ *)program;
 
 	for(int i=0; i<program_distr->num_program_tuples; i++ ){
-
+		#ifdef DEBUG
 		printf("[clBuildProgram interposed] program_tuple[%d].clhandle %p\n", i, program_distr->program_tuples[i].clhandle);
 		printf("[clBuildProgram interposed] program_tuple[%d].node %s\n", i, program_distr->program_tuples[i].node);
+		 #endif
 	}
 
 	//-cl-kernel-arg-info not supported in the compiler version installed
@@ -727,8 +763,10 @@ cl_int clBuildProgram (cl_program program, cl_uint num_devices, const cl_device_
 			ret_pkt.options.buff_ptr = NULL;
 
 			arg_pkt.program = (unsigned long)(program_distr->program_tuples[j].clhandle);
+			#ifdef DEBUG
 			printf("[clBuildProgram interposed] program %p", arg_pkt.program);
-
+			printf("[clBuildProgram interposed] options %s\n", arg_pkt.options.buff_ptr);
+			 #endif
 			char *curr_node = program_distr->program_tuples[j].node;
 
 			void *context = zmq_ctx_new ();
@@ -757,7 +795,9 @@ cl_int clBuildProgram (cl_program program, cl_uint num_devices, const cl_device_
 
 zmq_close (requester);
     zmq_ctx_destroy (context);
+			#ifdef DEBUG
 			printf("[clBuildProgram interposed]clnt_call OK\n");
+			 #endif
 			err |= ret_pkt.err;
 
 		}
@@ -812,7 +852,9 @@ zmq_close (requester);
                         itv++){
 
                         device_list[device_count++] = (*itv);
+			#ifdef DEBUG
                         printf("[clBuildProgram interposed] device %p\n", (*itv));
+			 #endif
 
                 }
                 assert(devicevector.size() == device_count);
@@ -823,14 +865,17 @@ zmq_close (requester);
 
 		arg_pkt.options.buff_ptr = tot_options;
 		arg_pkt.options.buff_len = tot_options_size;
-
+		#ifdef DEBUG
 		printf("[clBuildProgram interposed] options %s len %d len(from strlen) %d\n", arg_pkt.options.buff_ptr, arg_pkt.options.buff_len, strlen(arg_pkt.options.buff_ptr));
+		 #endif
 
                 ret_pkt.devices.buff_ptr = NULL;
                 ret_pkt.options.buff_ptr = NULL;
 
                 char *curr_node = it->first;
+		#ifdef DEBUG
 		printf("[clBuildProgram interposed] devices on node %s\n", curr_node);
+		 #endif
 
 		//Can replace this search repititively by first arranging program_distr into a map
 		//and then doing a find each time
@@ -844,7 +889,9 @@ zmq_close (requester);
 			//printf("[clBuildProgram interposed] program %p\n", arg_pkt.program);
 			break;
 		}			
+		#ifdef DEBUG
 		printf("[clBuildProgram interposed] program %p\n", arg_pkt.program);
+		 #endif
 
 		void *context = zmq_ctx_new ();
                 void *requester = zmq_socket (context, ZMQ_REQ);
@@ -872,7 +919,9 @@ zmq_close (requester);
 	
 zmq_close (requester);
     zmq_ctx_destroy (context);
+		#ifdef DEBUG
                 printf("[clBuildProgram interposed]clnt_call OK\n");
+		 #endif
                 err |= ret_pkt.err;
 
         }
@@ -897,11 +946,14 @@ cl_kernel clCreateKernel (cl_program program,const char *kernel_name, cl_int *er
 	for(int i=0; i<program_distr->num_program_tuples; i++){
 
 		char *node = program_distr->program_tuples[i].node;
+		#ifdef DEBUG
 		printf("[clCreateKernel interposed] node %s\n", node);
+		 #endif
 
 		cl_program program_clhandle = program_distr->program_tuples[i].clhandle;
+		#ifdef DEBUG
 		printf("[clCreateKernel interposed] program %p\n", program_clhandle);
-
+		 #endif
 
 
 		create_kernel_ arg_pkt, ret_pkt;
@@ -936,20 +988,23 @@ cl_kernel clCreateKernel (cl_program program,const char *kernel_name, cl_int *er
 
 zmq_close (requester);
     zmq_ctx_destroy (context);
+		#ifdef DEBUG
 		printf("[clCreateKernel interposed] kernel returned %p\n", ret_pkt.kernel);
+		 #endif
 
 		kernel_distr->kernel_tuples[i].clhandle = (cl_kernel)(ret_pkt.kernel);
 		kernel_distr->kernel_tuples[i].node = node;
-
+	#ifdef DEBUG
 		printf("[clCreateKernel interposed] kernel_tuple[%d].clhandle %p\n", i, kernel_distr->kernel_tuples[i].clhandle);
-		printf("[clCreateKernel interposed] kernel_tuple[%d].node %s\n", i, kernel_distr->kernel_tuples[i].node);
 
+		printf("[clCreateKernel interposed] kernel_tuple[%d].node %s\n", i, kernel_distr->kernel_tuples[i].node);
+		 #endif
 		err |= ret_pkt.err;
 
 	}
 
 
-	*errcode_ret = err;
+//	*errcode_ret = err;
 	return (cl_kernel)kernel_distr;
 
 	//*errcode_ret = CL_SUCCESS;
@@ -973,20 +1028,27 @@ cl_int clSetKernelArg (cl_kernel kernel, cl_uint arg_index,size_t arg_size, cons
 	std::map<char*, cl_sampler> sampler_node_map;
 
 	if(!is_null_arg){
-
+	#ifdef DEBUG
 		printf("[clSetKernelArg interposed] is NOT null arg\n");
 		printf("[clSetKernelArg interposed] arg_value %p\n", *((cl_mem_ **)arg_value));
+		 #endif
 		std::vector<cl_mem_ *>::iterator it = find(mems_created.begin(), mems_created.end(), *((cl_mem_ **)arg_value)); //cl_mem_ was pushed into the mems_created vector...and now cl_mem_ * is received...so it has to be dereferenced first
 		if(it != mems_created.end()){
+			#ifdef DEBUG
 			printf("[clSetKernelArg interposed] is mem\n");
+			 #endif
 			is_mem = TRUE;
 			cl_mem_ *mem_distr = (*it);
+			#ifdef DEBUG
 			printf("[clSetKernelArg interposed] mem_distr %p\n", mem_distr);
 			printf("[clSetKernelArg interposed] mem_distr->num_mem_tuples %d\n", mem_distr->num_mem_tuples);
+			 #endif
 			for(int i=0; i<mem_distr->num_mem_tuples; i++){
 				mem_node_map.insert(std::pair<char*, cl_mem>(mem_distr->mem_tuples[i].node, mem_distr->mem_tuples[i].clhandle));
+				#ifdef DEBUG
 				printf("[clSetKernelArg interposed] node %s\n", mem_distr->mem_tuples[i].node);
 				printf("[clSetKernelArg interposed] cl_mem %p\n", mem_distr->mem_tuples[i].clhandle);
+				 #endif
 			}
 		}
 
@@ -1019,9 +1081,13 @@ cl_int clSetKernelArg (cl_kernel kernel, cl_uint arg_index,size_t arg_size, cons
 		arg_pkt.arg_size = arg_size;
 
 		cl_kernel kernel_clhandle = kernel_distr->kernel_tuples[i].clhandle;
+		#ifdef DEBUG
                 printf("[clSetKernelArg interposed] kernel %p\n", kernel_clhandle);
+		 #endif
 		char *node = kernel_distr->kernel_tuples[i].node;
+		#ifdef DEBUG
                 printf("[clSetKernelArg interposed] node %s\n", node);
+		 #endif
 
                 arg_pkt.kernel = (unsigned long)kernel_clhandle;
 
@@ -1030,7 +1096,9 @@ cl_int clSetKernelArg (cl_kernel kernel, cl_uint arg_index,size_t arg_size, cons
 				std::map<char*, cl_mem>::iterator it = mem_node_map.find(node);
 				assert(it != mem_node_map.end());
 				arg_pkt.mem = (unsigned long)(it->second);
+				#ifdef DEBUG
 				printf("[clSetKernelArg interposed] mem %p\n", (cl_mem)(arg_pkt.mem));
+				 #endif
 			}
 			//for cl_image
 			//for cl_sampler
@@ -1066,13 +1134,15 @@ cl_int clSetKernelArg (cl_kernel kernel, cl_uint arg_index,size_t arg_size, cons
 
 zmq_close (requester);
     zmq_ctx_destroy (context);
-
+		#ifdef DEBUG
                 printf("[clSetKernelArg interposed]clnt_call OK\n");
+		 #endif
                 err |= ret_pkt.err;
 
         }
-
+	#ifdef DEBUG
 	printf("[clSetKernelArg interposed] err %d\n", err);
+	 #endif
         return err;
 
 }
@@ -1087,15 +1157,18 @@ cl_int clEnqueueWriteBuffer (cl_command_queue command_queue, cl_mem buffer,cl_bo
 	cl_command_queue command_queue_clhandle = command_queue_distr->clhandle;
 
 	cl_mem_ *mem_distr = (cl_mem_ *)buffer;
+	#ifdef DEBUG
 	printf("[clEnqueueWriteBuffer interposed] mem_distr %p\n", mem_distr);
-
+	 #endif
 	int node_match_index = 0;
 	for(int i=0; i<mem_distr->num_mem_tuples; i++){
 
-		mem_node = mem_distr->mem_tuples[i].node;
+		mem_node = mem_distr->mem_tuples[i].node;	
+		#ifdef DEBUG
 		printf("[clEnqueueWriteBuffer interposed] mem_distr->mem_tuples[%d].node %s\n", i, mem_distr->mem_tuples[i].node);
+	
 		printf("[clEnqueueWriteBuffer interposed] mem_distr->mem_tuples[%d].clhandle %p\n", i, mem_distr->mem_tuples[i].clhandle);
-
+		 #endif
 		if(mem_node != command_queue_node){
 			continue;
 		}
@@ -1108,8 +1181,10 @@ cl_int clEnqueueWriteBuffer (cl_command_queue command_queue, cl_mem buffer,cl_bo
 	assert(mem_node == command_queue_node);
 
 	cl_mem mem_clhandle = mem_distr->mem_tuples[node_match_index].clhandle;
+	#ifdef DEBUG
 	printf("[clEnqueueWriteBuffer interposed] mem_clhandle %p\n", mem_clhandle);
 
+	 #endif
 
 
 	enqueue_write_buffer_ arg_pkt, ret_pkt;
@@ -1150,7 +1225,9 @@ cl_int clEnqueueWriteBuffer (cl_command_queue command_queue, cl_mem buffer,cl_bo
 
 zmq_close (requester);
     zmq_ctx_destroy (context);
+	#ifdef DEBUG
 	printf("[clEnqueueWriteBuffer interposed] err returned %d\n", ret_pkt.err);
+	 #endif
 
 	err = ret_pkt.err;
 	return err;
@@ -1159,8 +1236,9 @@ zmq_close (requester);
 
 
 cl_int clEnqueueReadBuffer (cl_command_queue command_queue, cl_mem buffer,cl_bool blocking_read, size_t offset, size_t size,  void *ptr, cl_uint num_events_in_wait_list,const cl_event *event_wait_list, cl_event *event){
-
+	#ifdef DEBUG
 	printf("[clEnqueueReadBuffer interposed] started...\n");
+	 #endif
 
 	cl_int err = CL_SUCCESS;
 	char *mem_node;
@@ -1170,15 +1248,18 @@ cl_int clEnqueueReadBuffer (cl_command_queue command_queue, cl_mem buffer,cl_boo
 	cl_command_queue command_queue_clhandle = command_queue_distr->clhandle;
 
 	cl_mem_ *mem_distr = (cl_mem_ *)buffer;
+	#ifdef DEBUG
 	printf("[clEnqueueReadBuffer interposed] mem_distr %p\n", mem_distr);
-
+	 #endif
 	int node_match_index = 0;
 	for(int i=0; i<mem_distr->num_mem_tuples; i++){
 
 		mem_node = mem_distr->mem_tuples[i].node;
+	#ifdef DEBUG
 		printf("[clEnqueueReadBuffer interposed] mem_distr->mem_tuples[%d].node %s\n", i, mem_distr->mem_tuples[i].node);
-		printf("[clEnqueueReadBuffer interposed] mem_distr->mem_tuples[%d].clhandle %p\n", i, mem_distr->mem_tuples[i].clhandle);
 
+		printf("[clEnqueueReadBuffer interposed] mem_distr->mem_tuples[%d].clhandle %p\n", i, mem_distr->mem_tuples[i].clhandle);
+		 #endif
 		if(mem_node != command_queue_node){
 			continue;
 		}
@@ -1191,7 +1272,9 @@ cl_int clEnqueueReadBuffer (cl_command_queue command_queue, cl_mem buffer,cl_boo
 	assert(mem_node == command_queue_node);
 
 	cl_mem mem_clhandle = mem_distr->mem_tuples[node_match_index].clhandle;
+	#ifdef DEBUG
 	printf("[clEnqueueReadBuffer interposed] mem_clhandle %p\n", mem_clhandle);
+	 #endif
 
 	enqueue_read_buffer_ arg_pkt, ret_pkt;
 
@@ -1225,13 +1308,14 @@ cl_int clEnqueueReadBuffer (cl_command_queue command_queue, cl_mem buffer,cl_boo
 
         ret_pkt = * (enqueue_read_buffer_*) zmq_msg_data(&reply);
                 //Todo free
-        ret_pkt.data.buff_ptr = (char *) malloc(ret_pkt.data.buff_len);
-        memcpy(ret_pkt.data.buff_ptr, zmq_msg_data(&reply_buffer), ret_pkt.data.buff_len);
+        memcpy(ptr, zmq_msg_data(&reply_buffer), ret_pkt.data.buff_len);
         cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
 zmq_close (requester);    
 zmq_ctx_destroy (context);
+	#ifdef DEBUG
 	printf("[clEnqueueReadBuffer interposed] err returned %d\n", ret_pkt.err);
-
+	 #endif
+	//ptr = (void *) ret_pkt.data.buff_ptr;
 	err = ret_pkt.err;
 	return err;
 
@@ -1248,15 +1332,18 @@ cl_int clEnqueueNDRangeKernel (cl_command_queue command_queue, cl_kernel kernel,
 	cl_command_queue command_queue_clhandle = command_queue_distr->clhandle;
 
 	cl_kernel_ *kernel_distr = (cl_kernel_ *)kernel;
+	#ifdef DEBUG
 	printf("[clEnqueueNDRangeKernel interposed] kernel_distr %p\n", kernel_distr);
+	 #endif
 
 	int node_match_index = 0;
 	for(int i=0; i<kernel_distr->num_kernel_tuples; i++){
 
 		kernel_node = kernel_distr->kernel_tuples[i].node;
+		#ifdef DEBUG
 		printf("[clEnqueueNDRangeKernel interposed] kernel_distr->kernel_tuples[%d].node %s\n", i, kernel_distr->kernel_tuples[i].node);
 		printf("[clEnqueueNDRangeKernel interposed] kernel_distr->kernel_tuples[%d].clhandle %p\n", i, kernel_distr->kernel_tuples[i].clhandle);
-
+		 #endif
 		if(kernel_node != command_queue_node){
 			continue;
 		}
@@ -1269,7 +1356,9 @@ cl_int clEnqueueNDRangeKernel (cl_command_queue command_queue, cl_kernel kernel,
 	assert(kernel_node == command_queue_node);
 
 	cl_kernel kernel_clhandle = kernel_distr->kernel_tuples[node_match_index].clhandle;
+	#ifdef DEBUG
 	printf("[clEnqueueNDRangeKernel interposed] kernel_clhandle %p\n", kernel_clhandle);
+	 #endif
 
 
 
@@ -1331,8 +1420,9 @@ cl_int clEnqueueNDRangeKernel (cl_command_queue command_queue, cl_kernel kernel,
 
 zmq_close (requester);
     zmq_ctx_destroy (context);
+	#ifdef DEBUG
 	printf("[clEnqueueNDRangeKernel interposed] err returned %d\n", ret_pkt.err);
-
+	 #endif
 	err = ret_pkt.err;
 	return err;
 
@@ -1343,3 +1433,831 @@ cl_int clFinish(cl_command_queue command_queue){
 	return CL_SUCCESS;
 
 }
+
+cl_int clReleaseKernel (cl_kernel kernel) {
+return CL_SUCCESS;
+}
+
+cl_int clReleaseProgram (cl_program program)
+{
+
+        return CL_SUCCESS;
+
+}
+
+
+cl_int clReleaseMemObject (cl_mem memobj)
+{
+
+        return CL_SUCCESS;
+
+}
+
+
+cl_int clReleaseCommandQueue(cl_command_queue command_queue)
+{
+
+        return CL_SUCCESS;
+
+}
+
+cl_int clReleaseContext (cl_context context)
+
+{
+
+        return CL_SUCCESS;
+
+}
+
+
+cl_context clCreateContextFromType (	cl_context_properties   *properties,
+ 	cl_device_type  device_type,
+ 	void  (*pfn_notify) (const char *errinfo,
+ 	const void  *private_info,
+ 	size_t  cb,
+ 	void  *user_data),
+ 	void  *user_data,
+ 	cl_int  *errcode_ret) {
+	
+	
+printf("Intercepted clCreateContextFromType call\n");
+	return NULL;
+	}
+	
+	
+cl_mem clCreateImage (	cl_context context,
+ 	cl_mem_flags flags,
+ 	const cl_image_format *image_format,
+ 	const cl_image_desc *image_desc,
+ 	void *host_ptr,
+ 	cl_int *errcode_ret) {
+	
+	printf("Intercepted clCreateImage call\n");
+	return NULL;
+	}
+	
+	
+cl_mem clCreateImage2D (	cl_context context,
+ 	cl_mem_flags flags,
+ 	const cl_image_format *image_format,
+ 	size_t image_width,
+ 	size_t image_height,
+ 	size_t image_row_pitch,
+ 	void *host_ptr,
+ 	cl_int *errcode_ret) {
+	printf("Intercepted clCreateImage2D call\n");
+	return NULL;
+	}
+	
+	cl_mem clCreateImage3D (	cl_context context,
+ 	cl_mem_flags flags,
+ 	const cl_image_format *image_format,
+ 	size_t image_width,
+ 	size_t image_height,
+ 	size_t image_depth,
+ 	size_t image_row_pitch,
+ 	size_t image_slice_pitch,
+ 	void *host_ptr,
+ 	cl_int *errcode_ret) {
+	printf("Intercepted clCreateImage3D call\n");
+	return NULL;
+	}
+	
+	
+
+cl_int clCreateKernelsInProgram (	cl_program  program,
+ 	cl_uint num_kernels,
+ 	cl_kernel *kernels,
+ 	cl_uint *num_kernels_ret) {
+	printf("Intercepted clCreateKernelsInProgram call\n");
+	        return CL_SUCCESS;
+
+}
+
+
+cl_program clCreateProgramWithBinary (	cl_context context,
+ 	cl_uint num_devices,
+ 	const cl_device_id *device_list,
+ 	const size_t *lengths,
+ 	const unsigned char **binaries,
+ 	cl_int *binary_status,
+ 	cl_int *errcode_ret) {
+	printf("Intercepted clCreateProgramWithBinary call\n");
+		return NULL;
+	}
+	
+	
+cl_program clCreateProgramWithBuiltInKernels (	cl_context context,
+ 	cl_uint num_devices,
+ 	const cl_device_id *device_list,
+ 	const char *kernel_names,
+ 	cl_int *errcode_ret) {
+	printf("Intercepted clCreateProgramWithBuiltInKernels call\n");
+return NULL;
+	}
+	
+	
+cl_sampler clCreateSampler (	cl_context context,
+ 	cl_bool normalized_coords,
+ 	cl_addressing_mode addressing_mode,
+ 	cl_filter_mode filter_mode,
+ 	cl_int *errcode_ret) {
+	printf("Intercepted clCreateSampler call\n");
+	return NULL;
+	}
+	
+	
+	cl_mem clCreateSubBuffer (	cl_mem buffer,
+ 	cl_mem_flags flags,
+ 	cl_buffer_create_type buffer_create_type,
+ 	const void *buffer_create_info,
+ 	cl_int *errcode_ret) 
+	{
+	printf("Intercepted clCreateSubBuffer call\n");
+	return NULL;
+	}
+	
+	
+	
+cl_int clCreateSubDevices (	cl_device_id  in_device ,
+ 	const cl_device_partition_property  *properties ,
+ 	cl_uint  num_devices ,
+ 	cl_device_id  *out_devices ,
+ 	cl_uint  *num_devices_ret ) {
+	printf("Intercepted clCreateSubDevices call\n");
+	return NULL;
+	}
+	
+	
+	
+cl_event clCreateUserEvent (	cl_context context,
+ 	cl_int *errcode_ret) {
+	printf("Intercepted clCreateUserEvent call\n");
+	return NULL;
+	}
+	
+	
+cl_int clEnqueueBarrier (	cl_command_queue command_queue) {
+printf("Intercepted clEnqueueBarrier call\n");
+        return CL_SUCCESS;
+
+}
+
+
+
+cl_int clEnqueueBarrierWithWaitList (	cl_command_queue  command_queue ,
+ 	cl_uint  num_events_in_wait_list ,
+ 	const cl_event  *event_wait_list ,
+ 	cl_event  *event ) {
+	printf("Intercepted clEnqueueBarrierWithWaitList call\n");
+	return CL_SUCCESS;
+
+}
+
+
+cl_int clEnqueueCopyBuffer (	cl_command_queue command_queue,
+ 	cl_mem src_buffer,
+ 	cl_mem dst_buffer,
+ 	size_t src_offset,
+ 	size_t dst_offset,
+ 	size_t cb,
+ 	cl_uint num_events_in_wait_list,
+ 	const cl_event *event_wait_list,
+ 	cl_event *event) {
+	printf("Intercepted clEnqueueCopyBuffer call\n");
+	return CL_SUCCESS;
+
+}
+
+cl_int clEnqueueCopyBufferRect (	cl_command_queue command_queue,
+ 	cl_mem src_buffer,
+ 	cl_mem dst_buffer,
+ 	const size_t src_origin[3],
+ 	const size_t dst_origin[3],
+ 	const size_t region[3],
+ 	size_t src_row_pitch,
+ 	size_t src_slice_pitch,
+ 	size_t dst_row_pitch,
+ 	size_t dst_slice_pitch,
+ 	cl_uint num_events_in_wait_list,
+ 	const cl_event *event_wait_list,
+ 	cl_event *event) {
+	printf("Intercepted clEnqueueCopyBufferRect call\n");
+	return CL_SUCCESS;
+
+}
+
+
+
+cl_int clEnqueueCopyBufferToImage (	cl_command_queue command_queue,
+ 	cl_mem src_buffer,
+ 	cl_mem  dst_image,
+ 	size_t src_offset,
+ 	const size_t dst_origin[3],
+ 	const size_t region[3],
+ 	cl_uint num_events_in_wait_list,
+ 	const cl_event *event_wait_list,
+ 	cl_event *event) {
+	printf("Intercepted clEnqueueCopyBufferToImage call\n");
+	return CL_SUCCESS;
+
+}
+
+
+cl_int clEnqueueCopyImage (	cl_command_queue command_queue,
+ 	cl_mem src_image,
+ 	cl_mem dst_image,
+ 	const size_t src_origin[3],
+ 	const size_t dst_origin[3],
+ 	const size_t region[3],
+ 	cl_uint num_events_in_wait_list,
+ 	const cl_event *event_wait_list,
+ 	cl_event *event) { 
+	printf("Intercepted clEnqueueCopyImage call\n");
+	return CL_SUCCESS;
+
+}
+
+
+
+cl_int clEnqueueCopyImageToBuffer (	cl_command_queue command_queue,
+ 	cl_mem src_image,
+ 	cl_mem  dst_buffer,
+ 	const size_t src_origin[3],
+ 	const size_t region[3],
+ 	size_t dst_offset,
+ 	cl_uint num_events_in_wait_list,
+ 	const cl_event *event_wait_list,
+ 	cl_event *event) { 
+	printf("Intercepted clEnqueueCopyImageToBuffer call\n");
+	return CL_SUCCESS;
+
+}
+
+cl_int clEnqueueFillBuffer (	cl_command_queue  command_queue ,
+ 	cl_mem  buffer ,
+ 	const void  *pattern ,
+ 	size_t  pattern_size ,
+ 	size_t  offset ,
+ 	size_t  size ,
+ 	cl_uint  num_events_in_wait_list ,
+ 	const cl_event  *event_wait_list ,
+ 	cl_event  *event ) {
+	printf("Intercepted clEnqueueFillBuffer call\n");
+	return CL_SUCCESS;
+
+}
+
+
+
+cl_int clEnqueueFillImage (	cl_command_queue command_queue,
+ 	cl_mem image,
+ 	const void *fill_color,
+ 	const size_t *origin,
+ 	const size_t *region,
+ 	cl_uint num_events_in_wait_list,
+ 	const cl_event *event_wait_list,
+ 	cl_event *event) {
+	printf("Intercepted clEnqueueFillImage call\n");
+	return CL_SUCCESS;
+
+}
+
+
+
+void * clEnqueueMapBuffer (	cl_command_queue command_queue,
+ 	cl_mem buffer,
+ 	cl_bool blocking_map,
+ 	cl_map_flags map_flags,
+ 	size_t offset,
+ 	size_t cb,
+ 	cl_uint num_events_in_wait_list,
+ 	const cl_event *event_wait_list,
+ 	cl_event *event,
+ 	cl_int *errcode_ret) {
+	printf("Intercepted clEnqueueMapBuffer call\n");
+	return NULL;
+	}
+	
+	
+void * clEnqueueMapImage (	cl_command_queue command_queue,
+ 	cl_mem image,
+ 	cl_bool blocking_map,
+ 	cl_map_flags map_flags,
+ 	const size_t origin[3],
+ 	const size_t region[3],
+ 	size_t *image_row_pitch,
+ 	size_t *image_slice_pitch,
+ 	cl_uint num_events_in_wait_list,
+ 	const cl_event *event_wait_list,
+ 	cl_event *event,
+ 	cl_int *errcode_ret) { 
+	printf("Intercepted clEnqueueMapImage call\n");
+	return NULL;
+	}
+	
+	cl_int clEnqueueMarker (	cl_command_queue command_queue,
+ 	cl_event *event) { 
+	printf("Intercepted clEnqueueMarker call\n");
+		return CL_SUCCESS;
+
+}
+
+
+
+cl_int clEnqueueMarkerWithWaitList (	cl_command_queue  command_queue ,
+ 	cl_uint  num_events_in_wait_list ,
+ 	const cl_event  *event_wait_list ,
+ 	cl_event  *event ) {
+	printf("Intercepted clEnqueueMarkerWithWaitList call\n");
+	return CL_SUCCESS;
+
+}
+
+
+
+cl_int clEnqueueMigrateMemObjects (	cl_command_queue  command_queue ,
+ 	cl_uint  num_mem_objects ,
+ 	const cl_mem  *mem_objects ,
+ 	cl_mem_migration_flags  flags ,
+ 	cl_uint  num_events_in_wait_list ,
+ 	const cl_event  *event_wait_list ,
+ 	cl_event  *event ) {
+	printf("Intercepted clEnqueueMigrateMemObjects call\n");
+	return CL_SUCCESS;
+
+}
+
+
+cl_int clEnqueueNativeKernel (	cl_command_queue command_queue,
+ 	void (*user_func)(void *),
+ 	void *args,
+ 	size_t cb_args,
+ 	cl_uint num_mem_objects,
+ 	const cl_mem *mem_list,
+ 	const void **args_mem_loc,
+ 	cl_uint num_events_in_wait_list,
+ 	const cl_event *event_wait_list,
+ 	cl_event *event) {
+	printf("Intercepted clEnqueueNativeKernel call\n");
+	return CL_SUCCESS;
+
+}
+
+
+
+cl_int clEnqueueReadBufferRect (	cl_command_queue command_queue,
+ 	cl_mem buffer,
+ 	cl_bool blocking_read,
+ 	const size_t buffer_origin[3],
+ 	const size_t host_origin[3],
+ 	const size_t region[3],
+ 	size_t buffer_row_pitch,
+ 	size_t buffer_slice_pitch,
+ 	size_t host_row_pitch,
+ 	size_t host_slice_pitch,
+ 	void *ptr,
+ 	cl_uint num_events_in_wait_list,
+ 	const cl_event *event_wait_list,
+ 	cl_event *event) {
+	printf("Intercepted clEnqueueReadBufferRect call\n");
+	return CL_SUCCESS;
+
+}
+
+
+cl_int clEnqueueReadImage (	cl_command_queue command_queue,
+ 	cl_mem image,
+ 	cl_bool blocking_read,
+ 	const size_t origin[3],
+ 	const size_t region[3],
+ 	size_t row_pitch,
+ 	size_t slice_pitch,
+ 	void *ptr,
+ 	cl_uint num_events_in_wait_list,
+ 	const cl_event *event_wait_list,
+ 	cl_event *event) {
+	printf("Intercepted clEnqueueReadImage call\n");
+	return CL_SUCCESS;
+
+}
+
+cl_int clEnqueueTask (	cl_command_queue command_queue,
+ 	cl_kernel kernel,
+ 	cl_uint num_events_in_wait_list,
+ 	const cl_event *event_wait_list,
+ 	cl_event *event)  {
+	printf("Intercepted clEnqueueTask call\n");
+	return CL_SUCCESS;
+
+}
+
+
+void * clEnqueueUnmapMemObject (	cl_command_queue command_queue,
+ 	cl_mem memobj,
+ 	void *mapped_ptr,
+ 	cl_uint num_events_in_wait_list,
+ 	const cl_event *event_wait_list,
+ 	cl_event *event) {
+	printf("Intercepted clEnqueueUnmapMemObject call\n");
+	return NULL;
+	
+	}
+	
+	
+cl_int clEnqueueWaitForEvents (	cl_command_queue command_queue,
+ 	cl_uint num_events,
+ 	const cl_event *event_list){
+	printf("Intercepted clEnqueueWaitForEvents call\n");
+	return CL_SUCCESS;
+	
+	}
+	
+	
+	
+cl_int clEnqueueWriteBuffer (	cl_command_queue command_queue,
+ 	cl_mem buffer,
+ 	cl_bool blocking_write,
+ 	size_t offset,
+ 	size_t cb,
+ 	const void *ptr,
+ 	cl_uint num_events_in_wait_list,
+ 	const cl_event *event_wait_list,
+ 	cl_event *event){
+	printf("Intercepted clEnqueueWriteBuffer call\n");
+	return CL_SUCCESS;
+	
+	}
+	
+	
+cl_int clEnqueueWriteBufferRect (	cl_command_queue command_queue,
+ 	cl_mem buffer,
+ 	cl_bool blocking_write,
+ 	const size_t buffer_origin[3],
+ 	const size_t host_origin[3],
+ 	const size_t region[3],
+ 	size_t buffer_row_pitch,
+ 	size_t buffer_slice_pitch,
+ 	size_t host_row_pitch,
+ 	size_t host_slice_pitch,
+ 	void *ptr,
+ 	cl_uint num_events_in_wait_list,
+ 	const cl_event *event_wait_list,
+ 	cl_event *event)
+	{
+	printf("Intercepted clEnqueueWriteBufferRect call\n");
+	return CL_SUCCESS;
+	
+	}
+	
+	
+cl_int clEnqueueWriteImage (	cl_command_queue command_queue,
+ 	cl_mem image,
+ 	cl_bool blocking_write,
+ 	const size_t origin[3],
+ 	const size_t region[3],
+ 	size_t input_row_pitch,
+ 	size_t input_slice_pitch,
+ 	const void * ptr,
+ 	cl_uint num_events_in_wait_list,
+ 	const cl_event *event_wait_list,
+ 	cl_event *event) {
+	printf("Intercepted clEnqueueWriteImage call\n");
+	return CL_SUCCESS;
+	
+	}
+	
+	
+cl_int clFlush (cl_command_queue command_queue) {
+printf("Intercepted clFlush call\n");
+return CL_SUCCESS;
+	
+	}
+	
+	
+cl_int clGetCommandQueueInfo(	cl_command_queue command_queue,
+ 	cl_command_queue_info param_name,
+ 	size_t param_value_size,
+ 	void *param_value,
+ 	size_t *param_value_size_ret) {
+printf("Intercepted clGetCommandQueueInfo call\n");
+return CL_SUCCESS;
+	
+	}
+	
+	
+cl_int clGetContextInfo (	cl_context context,
+ 	cl_context_info param_name,
+ 	size_t param_value_size,
+ 	void *param_value,
+ 	size_t param_value_size_ret) {
+printf("Intercepted clGetContextInfo call\n");
+return CL_SUCCESS;
+	
+	}
+	
+	
+cl_int clGetDeviceInfo(	cl_device_id device,
+ 	cl_device_info param_name,
+ 	size_t param_value_size,
+ 	void *param_value,
+ 	size_t *param_value_size_ret) {
+printf("Intercepted clGetDeviceInfo call\n");
+return CL_SUCCESS;
+	
+	}
+	
+	
+cl_int clGetEventInfo (	cl_event event,
+ 	cl_event_info param_name,
+ 	size_t param_value_size,
+ 	void *param_value,
+ 	size_t *param_value_size_ret) {
+printf("Intercepted clGetEventInfo call\n");
+return CL_SUCCESS;
+	
+	}
+	
+	
+cl_int clGetEventProfilingInfo (	cl_event event,
+ 	cl_profiling_info param_name,
+ 	size_t param_value_size,
+ 	void *param_value,
+ 	size_t *param_value_size_ret){
+printf("Intercepted clGetEventProfilingInfo call\n");
+return CL_SUCCESS;
+	
+	}
+	
+	
+cl_int clGetImageInfo (	cl_mem image,
+ 	cl_image_info param_name,
+ 	size_t param_value_size,
+ 	void *param_value,
+ 	size_t *param_value_size_ret){
+printf("Intercepted clGetImageInfo call\n");
+return CL_SUCCESS;
+	
+	}
+	
+	
+cl_int clGetKernelArgInfo (	cl_kernel  kernel ,
+ 	cl_uint  arg_indx ,
+ 	cl_kernel_arg_info  param_name ,
+ 	size_t  param_value_size ,
+ 	void  *param_value ,
+ 	size_t  *param_value_size_ret ){
+printf("Intercepted clGetKernelArgInfo call\n");
+return CL_SUCCESS;
+	
+	}
+	
+	
+cl_int clGetKernelWorkGroupInfo (	cl_kernel kernel,
+ 	cl_device_id device,
+ 	cl_kernel_work_group_info param_name,
+ 	size_t param_value_size,
+ 	void *param_value,
+ 	size_t *param_value_size_ret){
+printf("Intercepted clGetKernelWorkGroupInfo call\n");
+return CL_SUCCESS;
+	
+	}
+	
+	
+cl_int clGetMemObjectInfo (	cl_mem memobj,
+ 	cl_mem_info param_name,
+ 	size_t param_value_size,
+ 	void *param_value,
+ 	size_t *param_value_size_ret){
+printf("Intercepted clGetMemObjectInfo call\n");
+return CL_SUCCESS;
+	
+	}
+	
+	
+cl_int clGetPlatformIDs(	cl_uint num_entries,
+ 	cl_platform_id *platforms,
+ 	cl_uint *num_platforms){
+printf("Intercepted clGetPlatformIDs call\n");
+return CL_SUCCESS;
+	
+	}
+	
+	
+cl_int clGetPlatformInfo(	cl_platform_id platform,
+ 	cl_platform_info param_name,
+ 	size_t param_value_size,
+ 	void *param_value,
+ 	size_t *param_value_size_ret){
+printf("Intercepted clGetPlatformInfo call\n");
+return CL_SUCCESS;
+	
+	}
+	
+	
+cl_int clGetProgramBuildInfo (	cl_program  program,
+ 	cl_device_id  device,
+ 	cl_program_build_info  param_name,
+ 	size_t  param_value_size,
+ 	void  *param_value,
+ 	size_t  *param_value_size_ret){
+printf("Intercepted clGetProgramBuildInfo call\n");
+return CL_SUCCESS;
+	
+	}
+	
+	
+cl_int clGetProgramInfo (	cl_program program,
+ 	cl_program_info param_name,
+ 	size_t param_value_size,
+ 	void *param_value,
+ 	size_t *param_value_size_ret) {
+	printf("Intercepted clGetProgramInfo call\n");
+	return CL_SUCCESS;
+	
+	}
+	
+	
+cl_int clGetSamplerInfo (	cl_sampler sampler,
+ 	cl_sampler_info param_name,
+ 	size_t param_value_size,
+ 	void *param_value,
+ 	size_t *param_value_size_ret){
+	printf("Intercepted clGetSamplerInfo call\n");
+	return CL_SUCCESS;
+	
+	}
+	
+	
+cl_int clGetSupportedImageFormats (	cl_context context,
+ 	cl_mem_flags flags,
+ 	cl_mem_object_type image_type,
+ 	cl_uint num_entries,
+ 	cl_image_format *image_formats,
+ 	cl_uint *num_image_formats){
+	printf("Intercepted clGetSupportedImageFormats call\n");
+	return CL_SUCCESS;
+	
+	}
+	
+	
+cl_program clLinkProgram (	cl_context context,
+ 	cl_uint num_devices,
+ 	const cl_device_id *device_list,
+ 	const char *options,
+ 	cl_uint num_input_programs,
+ 	const cl_program *input_programs,
+ 	void (CL_CALLBACK *pfn_notify) (cl_program program, void *user_data),
+ 	void *user_data,
+ 	cl_int *errcode_ret){
+	printf("Intercepted clLinkProgram call\n");
+	return CL_SUCCESS;
+	
+	}
+	
+	
+cl_int clReleaseDevice (cl_device_id device){
+	printf("Intercepted clReleaseDevice call\n");
+	return CL_SUCCESS;
+	
+	}
+	
+	
+cl_int clReleaseSampler (cl_sampler sampler){
+	printf("Intercepted clReleaseSampler call\n");
+	return CL_SUCCESS;
+	
+	}
+	
+	
+cl_int clRetainCommandQueue(cl_command_queue command_queue){
+	printf("Intercepted clRetainCommandQueue call\n");
+	return CL_SUCCESS;
+	
+	}
+	
+	cl_int clRetainContext (	cl_context context){
+	printf("Intercepted clRetainContext call\n");
+	return CL_SUCCESS;
+	
+	}
+	
+	cl_int clRetainDevice (	cl_device_id  device ){
+	printf("Intercepted clRetainDevice call\n");
+	return CL_SUCCESS;
+	
+	}
+	
+	
+cl_int clRetainEvent (	cl_event event){
+	printf("Intercepted clRetainEvent call\n");
+	return CL_SUCCESS;
+	
+	}
+	
+	
+cl_int clRetainKernel (	cl_kernel kernel){
+	printf("Intercepted clRetainKernel call\n");
+	return CL_SUCCESS;
+	
+	}
+	
+	
+cl_int clRetainMemObject (	cl_mem memobj){
+	printf("Intercepted clRetainMemObject call\n");
+	return CL_SUCCESS;
+	
+	}
+	
+	
+cl_int clRetainProgram (	cl_program program){
+	printf("Intercepted clRetainProgram call\n");
+	return CL_SUCCESS;
+	
+	}
+	
+	cl_int clRetainSampler(	cl_sampler sampler){
+	printf("Intercepted clRetainSampler call\n");
+	return CL_SUCCESS;
+	
+	}
+	
+	
+	
+cl_int clSetEventCallback (	cl_event event,
+ 	cl_int  command_exec_callback_type ,
+ 	void (CL_CALLBACK  *pfn_event_notify) (cl_event event, cl_int event_command_exec_status, void *user_data),
+ 	void *user_data) {
+	printf("Intercepted clSetEventCallback call\n");
+	return CL_SUCCESS;
+	
+	}
+	
+	
+
+cl_int clSetMemObjectDestructorCallback (	cl_mem memobj,
+ 	void (CL_CALLBACK  *pfn_notify) (cl_mem memobj,
+ 	void *user_data),
+ 	void *user_data){
+	printf("Intercepted clSetMemObjectDestructorCallback call\n");
+	return CL_SUCCESS;
+	
+	}
+	
+	
+cl_mem clSetUserEventStatus (	cl_event event,
+ 	cl_int execution_status) {
+	printf("Intercepted clSetUserEventStatus call\n");
+	return NULL;
+	}
+	
+	
+cl_int clUnloadCompiler (	void ){
+	printf("Intercepted clUnloadCompiler call\n");
+	return CL_SUCCESS;
+	
+	}
+	
+	
+cl_int clUnloadPlatformCompiler (	cl_platform_id platform){
+	printf("Intercepted clUnloadPlatformCompiler call\n");
+	return CL_SUCCESS;
+	
+	}
+	
+	
+cl_int clWaitForEvents (	cl_uint num_events,
+ 	const cl_event *event_list){
+	printf("Intercepted clWaitForEvents call\n");
+	return CL_SUCCESS;
+	
+	}
+
+
+
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+
+
+
+
+
+
+
+	
