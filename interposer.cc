@@ -1852,7 +1852,7 @@ cl_int clEnqueueTask (	cl_command_queue command_queue,
 
 }
 
-
+/*
 void * clEnqueueUnmapMemObject (	cl_command_queue command_queue,
  	cl_mem memobj,
  	void *mapped_ptr,
@@ -1863,7 +1863,7 @@ void * clEnqueueUnmapMemObject (	cl_command_queue command_queue,
 	return NULL;
 	
 	}
-	
+*/	
 	
 cl_int clEnqueueWaitForEvents (	cl_command_queue command_queue,
  	cl_uint num_events,
@@ -1875,19 +1875,6 @@ cl_int clEnqueueWaitForEvents (	cl_command_queue command_queue,
 	
 	
 	
-cl_int clEnqueueWriteBuffer (	cl_command_queue command_queue,
- 	cl_mem buffer,
- 	cl_bool blocking_write,
- 	size_t offset,
- 	size_t cb,
- 	const void *ptr,
- 	cl_uint num_events_in_wait_list,
- 	const cl_event *event_wait_list,
- 	cl_event *event){
-	printf("Intercepted clEnqueueWriteBuffer call\n");
-	return CL_SUCCESS;
-	
-	}
 	
 	
 cl_int clEnqueueWriteBufferRect (	cl_command_queue command_queue,
@@ -2036,13 +2023,6 @@ return CL_SUCCESS;
 	}
 	
 	
-cl_int clGetPlatformIDs(	cl_uint num_entries,
- 	cl_platform_id *platforms,
- 	cl_uint *num_platforms){
-printf("Intercepted clGetPlatformIDs call\n");
-return CL_SUCCESS;
-	
-	}
 	
 	
 cl_int clGetPlatformInfo(	cl_platform_id platform,
@@ -2205,15 +2185,15 @@ cl_int clSetMemObjectDestructorCallback (	cl_mem memobj,
 	
 	}
 	
-	
+/*	
 cl_mem clSetUserEventStatus (	cl_event event,
  	cl_int execution_status) {
 	printf("Intercepted clSetUserEventStatus call\n");
 	return NULL;
 	}
+*/	
 	
-	
-cl_int clUnloadCompiler (	void ){
+cl_int clUnloadCompiler (void ){
 	printf("Intercepted clUnloadCompiler call\n");
 	return CL_SUCCESS;
 	
