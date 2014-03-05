@@ -80,7 +80,8 @@ void clGetPlatformInfo_server(get_platform_info_ *argp, get_platform_info_ *retp
 void clGetProgramInfo_server(get_program_info_ *argp, get_program_info_ *retp){
 	retp->err = CL_SUCCESS;
 	size_t size = 0;
-	char * profile = NULL;
+	char ** profile = NULL;
+int i;
 	fprintf(stderr,"clGetProgramInfo_server program = %d param name = %d size = %d \n",argp->program,argp->param_name,argp->param_value_size);
 	if(argp->is_buff_null) {
 		fprintf(stderr,"clGetProgramInfo first case\n");
@@ -88,6 +89,9 @@ void clGetProgramInfo_server(get_program_info_ *argp, get_program_info_ *retp){
 	} else {
 		fprintf(stderr,"clGetProgramInfo second case\n");
 		profile = (char * ) malloc(argp->param_value_size);
+		for ( i=0;i<(int)argp->param_value_size;++i) {
+    			profile[i] = new unsigned char[4096];
+		}
 		clGetProgramInfo(argp->program, argp->param_name, argp->param_value_size, profile, NULL);
 	}
 	if(profile) {
