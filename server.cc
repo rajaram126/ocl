@@ -92,7 +92,7 @@ int i;
 		fprintf(stderr,"clGetProgramInfo second case\n");
 		binaries = new  char*[argp->param_value_size];
 		for ( i=0;i<(int)argp->param_value_size;++i) {
-    			binaries[i] = new  char[50000];
+    			binaries[i] = new  char[50000000];
 		}
 		clGetProgramInfo(argp->program, argp->param_name, argp->param_value_size, binaries, NULL);
 		} else {
