@@ -307,9 +307,9 @@ void clBuildProgram_server(build_program_ *argp, build_program_ *retp){
 
 	cl_int err = CL_SUCCESS;
 
-        //fprintf(stderr,"[clBuildProgram_server] program %p\n", argp->program);
-	//fprintf(stderr,"[clBuildProgram_server] options %s\n", argp->options.buff_ptr);
-	 //fprintf(stderr,"[clBuildProgram_server] options length %d\n", argp->options.buff_len);
+        fprintf(stderr,"[clBuildProgram_server] program %p\n", argp->program);
+	fprintf(stderr,"[clBuildProgram_server] options %s\n", argp->options.buff_ptr);
+	 fprintf(stderr,"[clBuildProgram_server] options length %d\n", argp->options.buff_len);
 	if(!argp->options.buff_len) {
 	argp->options.buff_ptr = "";
 	}
@@ -320,7 +320,7 @@ void clBuildProgram_server(build_program_ *argp, build_program_ *retp){
 		err  = clBuildProgram((cl_program)(argp->program), (argp->num_devices), (cl_device_id *)(argp->devices.buff_ptr), (const char *)(argp->options.buff_ptr), NULL, NULL);
 	}
         if(err != CL_SUCCESS){
-                //fprintf(stderr,"clBuildProgram failed with err %d\n", err);
+                fprintf(stderr,"clBuildProgram failed with err %d\n", err);
                 exit(-1);
         }
 	retp->err = err;
@@ -727,8 +727,8 @@ main() {
 							build_program_ arg_pkt,ret_pkt;
 							zmq_msg_t message,message_buffer,message_buffer_aux,reply,reply_buffer;
 							zmq_msg_init(&message);
-                                                zmq_msg_init(&message_buffer);
-                                                zmq_msg_init(&message_buffer_aux);
+                                                	zmq_msg_init(&message_buffer);
+                                                	zmq_msg_init(&message_buffer_aux);
 							zmq_msg_recv(&message, responder, 0);
 							arg_pkt = * (build_program_*) zmq_msg_data(&message);
 							zmq_msg_recv(&message_buffer, responder, 0);
