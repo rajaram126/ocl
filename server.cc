@@ -97,7 +97,7 @@ int i;
 		clGetProgramInfo(argp->program, argp->param_name, argp->param_value_size, binaries, NULL);
 		} else {
 			profile = (char * ) malloc(argp->param_value_size);
-		clGetPlatformInfo(argp->program, argp->param_name, argp->param_value_size, profile, NULL);
+		clGetProgramInfo(argp->program, argp->param_name, argp->param_value_size, profile, NULL);
 		}	
 	}
 	if(profile) {
