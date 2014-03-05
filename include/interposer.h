@@ -14,6 +14,7 @@
 #define ENQUEUE_WRITE_BUFFER 10
 #define ENQUEUE_READ_BUFFER 11
 #define ENQUEUE_NDRANGE_KERNEL 12
+#define GET_PLATFORM_INFO 13
 
 typedef int bool_t;
 typedef struct buff_t {
@@ -31,6 +32,16 @@ typedef struct get_platform_ids_t {
 	buff_ platforms;
 }get_platform_ids_;
 
+typedef struct get_platform_info_t {
+	int err;
+	cl_platform_id platform;
+	cl_platform_info param_name;
+	size_t param_value_size;
+	buff_ param_value;
+}get_platform_info_;
+
+
+
 typedef struct get_device_ids_t {
 	unsigned long platform;
 	int device_type;
@@ -38,6 +49,16 @@ typedef struct get_device_ids_t {
 	unsigned int num_devices_found;
 	buff_ devices;
 } get_device_ids_;
+
+
+typedef struct get_device_info_t {
+	int err;
+	cl_device_id device;
+	cl_device_info param_name;
+	size_t param_value_size;
+	buff_ param_value;
+}get_device_info_;
+
 
 typedef struct create_context_t {
 	unsigned long context;
