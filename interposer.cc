@@ -2018,13 +2018,7 @@ cl_int clGetPlatformInfo(	cl_platform_id platform,
  	void *param_value,
  	size_t *param_value_size_ret){
 	printf("Intercepted clGetPlatformInfo call\n");
-	if(!num_entries && devices){
-		return CL_INVALID_VALUE;
-	}
 
-	if(!num_devices && !devices){
-		return CL_INVALID_VALUE;
-	}
 
 	cl_int err = CL_SUCCESS;
 	cl_platform_id_ *platform_distr = (cl_platform_id_ *)platform;
@@ -2075,13 +2069,7 @@ cl_int clGetDeviceInfo(	cl_device_id device,
  	void *param_value,
  	size_t *param_value_size_ret) {
 printf("Intercepted clGetDeviceInfo call\n");
-if(!num_entries && devices){
-		return CL_INVALID_VALUE;
-	}
 
-	if(!num_devices && !devices){
-		return CL_INVALID_VALUE;
-	}
 
 	cl_int err = CL_SUCCESS;
 	cl_device_id_ *device_distr = (cl_device_id_ *)device;
