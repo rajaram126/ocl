@@ -2152,7 +2152,7 @@ cl_int clGetProgramInfo (	cl_program program,
 	cl_int err = CL_SUCCESS;
 	cl_program_ *program_distr = (cl_program_ *)program;
 	char *node = program_distr->program_tuples[0].node;
-	cl_device_id clhandle = program_distr->program_tuples[0].clhandle;
+	cl_program clhandle = program_distr->program_tuples[0].clhandle;
 	get_program_info_ arg_pkt, ret_pkt;
 	arg_pkt.param_value.buff_ptr = "\0";
 	arg_pkt.param_value.buff_len = sizeof(char);
