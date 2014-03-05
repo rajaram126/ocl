@@ -9,7 +9,7 @@ build_server:
 
 build_client:
 	g++ -c interposer.cc -I /opt/AMDAPP/include/ -I ./include/ -fPIC
-	g++ -shared -Wl,-soname,libCLInterposerClient.so.1 -o libCLInterposerClient.so.1.0.1  interposer.o -lzmq
+	g++ -shared -Wl,-soname,libOpenCL.so.1 -o libCLInterposerClient.so.1.0.1  interposer.o -lzmq
 
 clean:
-	rm -rf *.o server client
+	rm -rf *.o server client libCLInterposerClient.so.1.0.1

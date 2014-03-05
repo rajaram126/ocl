@@ -12,11 +12,10 @@
 #include <unistd.h>
 #include "interposer.h"
 
-
 // move to config file
 char protocol[] = "tcp";
 char  port[] = "5555";
-char *nodes[] = {"127.0.0.1"};
+char *nodes[] = {"10.0.0.5"};
 
 
 int connect_zmq(char * node, void * requester) {
@@ -63,8 +62,6 @@ void cleanup_messages(zmq_msg_t * header, zmq_msg_t* message, zmq_msg_t* send_bu
 
 
 cl_int clGetPlatformIDs (cl_uint num_entries, cl_platform_id *platforms, cl_uint *num_platforms){
-
-//Don't send the RPC if the args are invalid
 	if(!num_entries && platforms){
 		return CL_INVALID_VALUE;
 	}
@@ -185,7 +182,6 @@ cl_int clGetPlatformIDs (cl_uint num_entries, cl_platform_id *platforms, cl_uint
 cl_int clGetDeviceIDs (cl_platform_id platform,cl_device_type device_type, cl_uint num_entries,cl_device_id *devices, cl_uint *num_devices){
 
 
-//Don't send the RPC if the args are invalid
 	if(!num_entries && devices){
 		return CL_INVALID_VALUE;
 	}
@@ -292,7 +288,6 @@ zmq_close (requester);
 
 cl_context clCreateContext (const cl_context_properties *properties,cl_uint num_devices, const cl_device_id *devices,void (CL_CALLBACK*pfn_notify)(const char *errinfo, const void *private_info,size_t cb, void *user_data),void *user_data, cl_int *errcode_ret){
 
-	//Don't send the RPC if the args are invalid
 	if(!devices || !num_devices){
 		*errcode_ret = CL_INVALID_VALUE;
 		return 0;
