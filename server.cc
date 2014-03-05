@@ -576,7 +576,7 @@ main() {
 						zmq_msg_close(&reply);
 						break;
 						}
-			case GET_DEVICE_INFO: {
+			case GET_PROGRAM_INFO: {
 						get_program_info_  arg_pkt,ret_pkt;
 						
 						zmq_msg_t message,message_buffer,reply,reply_buffer;
