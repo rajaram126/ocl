@@ -83,10 +83,10 @@ void clGetProgramInfo_server(get_program_info_ *argp, get_program_info_ *retp){
 	char * profile = NULL;
 	fprintf(stderr,"clGetProgramInfo_server program = %d param name = %d \n",argp->program,argp->param_name);
 	if(argp->is_buff_null) {
-		fprintf("clGetProgramInfo first case\n");
+		fprintf(stderr,"clGetProgramInfo first case\n");
 		clGetProgramInfo(argp->program, argp->param_name, NULL, NULL, &size);
 	} else {
-		fprintf("clGetProgramInfo second case\n");
+		fprintf(stderr,"clGetProgramInfo second case\n");
 		profile = (char * ) malloc(argp->param_value_size);
 		clGetProgramInfo(argp->program, argp->param_name, argp->param_value_size, profile, NULL);
 	}
