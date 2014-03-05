@@ -2074,7 +2074,7 @@ printf("Intercepted clGetDeviceInfo call\n");
 	cl_int err = CL_SUCCESS;
 	cl_device_id_ *device_distr = (cl_device_id_ *)device;
 	char *node = device_distr->node;
-	cl_platform_id clhandle = device_distr->clhandle;
+	cl_device_id clhandle = device_distr->clhandle;
 	get_device_info_ arg_pkt, ret_pkt;
 	arg_pkt.param_value.buff_ptr = "\0";
 	arg_pkt.param_value.buff_len = sizeof(char);
@@ -2090,7 +2090,7 @@ printf("Intercepted clGetDeviceInfo call\n");
         connect_zmq(node , requester);
         zmq_msg_t header,message,message_buffer,reply,reply_buffer;
 	invocation_header hd;
-        hd.api_id = GET_PLATFORM_INFO;
+        hd.api_id = GET_DEVICE_INFO;
 	zmq_msg_init_size(&header, sizeof(hd));
         memcpy(zmq_msg_data(&header), &hd, sizeof(hd));
         zmq_msg_init_size(&message, sizeof(arg_pkt));
@@ -2100,7 +2100,7 @@ printf("Intercepted clGetDeviceInfo call\n");
         zmq_msg_init(&reply);
         zmq_msg_init(&reply_buffer);
         invoke_zmq(requester,&header, &message, &message_buffer, &reply,&reply_buffer);
-	ret_pkt = * (get_platform_info_*) zmq_msg_data(&reply);
+	ret_pkt = * (get_device_info_*) zmq_msg_data(&reply);
 	
 	if(param_value_size_ret != NULL) {
 		*param_value_size_ret = ret_pkt.param_value.buff_len;
