@@ -2028,7 +2028,7 @@ cl_int clGetPlatformInfo(	cl_platform_id platform,
 	arg_pkt.param_value.buff_ptr = "\0";
 	arg_pkt.param_value.buff_len = sizeof(char);
 	ret_pkt.param_value.buff_ptr = NULL;
-	if(param_value == NULL) {
+	if(param_value == NULL|| param_value_size == NULL) {
 		arg_pkt.is_buff_null = 1;
 	} else {
 		arg_pkt.is_buff_null = 0;
@@ -2083,7 +2083,7 @@ printf("Intercepted clGetDeviceInfo call\n");
 	arg_pkt.param_value.buff_ptr = "\0";
 	arg_pkt.param_value.buff_len = sizeof(char);
 	ret_pkt.param_value.buff_ptr = NULL;
-	if(param_value == NULL) {
+	if(param_value == NULL || param_value_size == NULL) {
 		arg_pkt.is_buff_null = 1;
 	} else {
 		arg_pkt.is_buff_null = 0;
