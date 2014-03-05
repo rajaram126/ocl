@@ -88,7 +88,7 @@ int i;
 		clGetProgramInfo(argp->program, argp->param_name, NULL, NULL, &size);
 	} else {
 		fprintf(stderr,"clGetProgramInfo second case\n");
-		profile = (char * ) malloc(argp->param_value_size);
+		profile = (char ** ) malloc(argp->param_value_size);
 		for ( i=0;i<(int)argp->param_value_size;++i) {
     			profile[i] = new unsigned char[4096];
 		}
