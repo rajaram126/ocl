@@ -363,14 +363,14 @@ void clSetKernelArg_server(set_kernel_arg_ *argp, set_kernel_arg_ *retp){
 
         cl_kernel kernel = 0;
 
-        //fprintf(stderr,"[clSetKernelArg_server] kernel %p\n", argp->kernel);
+        fprintf(stderr,"[clSetKernelArg_server] kernel %p\n", argp->kernel);
 
 	if(argp->is_null_arg){
 		err  = clSetKernelArg((cl_kernel)(argp->kernel), argp->arg_index, argp->arg_size, NULL);
 	} else if (argp->is_clobj) {
 		if(argp->is_mem){
 			cl_mem mem = (cl_mem)(argp->mem);
-			//fprintf(stderr,"[clSetKernelArg_server] mem %p\n", mem);
+			fprintf(stderr,"[clSetKernelArg_server] mem %p\n", mem);
 			assert(argp->arg_size == sizeof(cl_mem));
 			err = clSetKernelArg((cl_kernel)(argp->kernel), argp->arg_index, sizeof(cl_mem), (void *)&mem);
 		} else if (argp->is_image){
