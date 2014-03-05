@@ -402,6 +402,9 @@ cl_context clCreateContext (const cl_context_properties *properties,cl_uint num_
 	}
 
 	//*errcode_ret = err;
+	if(errcode_ret) {
+		*errcode_ret = CL_SUCCESS; 
+	}
 
 	return (cl_context)context_distr;
 }
@@ -473,6 +476,9 @@ zmq_close (requester);
 	command_queue_distr->clhandle = (cl_command_queue)(ret_pkt.command_queue);
 	command_queue_distr->node = device_node;
 	//*errcode_ret = ret_pkt.err;
+	if(errcode_ret) {
+		*errcode_ret = CL_SUCCESS; 
+	}
 	return (cl_command_queue)command_queue_distr;
 
 }
@@ -567,6 +573,9 @@ zmq_close (requester);
 	}
 
 	//*errcode_ret = err;
+	if(errcode_ret) {
+		*errcode_ret = CL_SUCCESS; 
+	}
 	#ifdef DEBUG
 	printf("[clCreateBuffer interposed] cl_mem_ * returned %p\n", mem_distr);
 	printf("[clCreateBuffer interposed] mem_distr->num_mem_tuples %d\n", mem_distr->num_mem_tuples);
@@ -689,6 +698,9 @@ zmq_close (requester);
 
 //	*errcode_ret = err;
 	return (cl_program)program_distr;
+	if(errcode_ret) {
+		*errcode_ret = CL_SUCCESS; 
+	}
 
 	//*errcode_ret = CL_SUCCESS;
 	//return program;
@@ -1001,6 +1013,9 @@ zmq_close (requester);
 
 //	*errcode_ret = err;
 	return (cl_kernel)kernel_distr;
+	if(errcode_ret) {
+		*errcode_ret = CL_SUCCESS; 
+	}
 
 	//*errcode_ret = CL_SUCCESS;
 	//return kernel;
@@ -2017,7 +2032,7 @@ cl_int clGetPlatformInfo(	cl_platform_id platform,
  	size_t param_value_size,
  	void *param_value,
  	size_t *param_value_size_ret){
-	printf("Intercepted clGetPlatformInfo call\n");
+
 
 
 	cl_int err = CL_SUCCESS;
@@ -2034,7 +2049,7 @@ cl_int clGetPlatformInfo(	cl_platform_id platform,
 		arg_pkt.is_buff_null = 0;
 	}
 	#ifdef DEBUG 
-	printf("clGetPlatformInfo platform id = %d param name = %d \n",clhandle,param_name);
+	printf("[clGetPlatformInfo] platform id = %d param name = %d \n",clhandle,param_name);
 	#endif
 
 
@@ -2075,7 +2090,7 @@ cl_int clGetDeviceInfo(	cl_device_id device,
  	size_t param_value_size,
  	void *param_value,
  	size_t *param_value_size_ret) {
-printf("Intercepted clGetDeviceInfo call\n");
+
 
 
 	cl_int err = CL_SUCCESS;
@@ -2092,7 +2107,7 @@ printf("Intercepted clGetDeviceInfo call\n");
 		arg_pkt.is_buff_null = 0;
 	}
 	#ifdef DEBUG 
-	printf("clGetDeviceInfo device id = %d param name = %d \n",clhandle,param_name);
+	printf("[clGetDeviceInfo] device id = %d param name = %d \n",clhandle,param_name);
 	#endif
 	arg_pkt.device = clhandle;
 	arg_pkt.param_name = param_name;
