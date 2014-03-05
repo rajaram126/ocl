@@ -765,7 +765,7 @@ cl_int clBuildProgram (cl_program program, cl_uint num_devices, const cl_device_
 			arg_pkt.devices.buff_len = sizeof(char);
 
 			arg_pkt.options.buff_ptr = tot_options;
-			arg_pkt.options.buff_len = tot_options_size;
+			arg_pkt.options.buff_len = tot_options_size+1;
 
 			ret_pkt.devices.buff_ptr = NULL;
 			ret_pkt.options.buff_ptr = NULL;
@@ -872,7 +872,7 @@ zmq_close (requester);
                 arg_pkt.devices.buff_len = sizeof(cl_device_id)*device_count;
 
 		arg_pkt.options.buff_ptr = tot_options;
-		arg_pkt.options.buff_len = tot_options_size;
+		arg_pkt.options.buff_len = tot_options_size+1;
 		#ifdef DEBUG
 		printf("[clBuildProgram interposed] options %s len %d len(from strlen) %d\n", arg_pkt.options.buff_ptr, arg_pkt.options.buff_len, strlen(arg_pkt.options.buff_ptr));
 		 #endif
