@@ -80,25 +80,36 @@ void clGetPlatformInfo_server(get_platform_info_ *argp, get_platform_info_ *retp
 void clGetProgramInfo_server(get_program_info_ *argp, get_program_info_ *retp){
 	retp->err = CL_SUCCESS;
 	size_t size = 0;
-	 char ** profile = NULL;
+	 char * profile = NULL;
+	 char ** binaries = NULL;
 int i;
 	fprintf(stderr,"clGetProgramInfo_server program = %d param name = %d size = %d \n",argp->program,argp->param_name,argp->param_value_size);
 	if(argp->is_buff_null) {
 		fprintf(stderr,"clGetProgramInfo first case\n");
 		clGetProgramInfo(argp->program, argp->param_name, NULL, NULL, &size);
 	} else {
+		if(argp->param_name == 4454) {
 		fprintf(stderr,"clGetProgramInfo second case\n");
-		profile = new  char*[argp->param_value_size];
+		binaries = new  char*[argp->param_value_size];
 		for ( i=0;i<(int)argp->param_value_size;++i) {
-    			profile[i] = new  char[4096];
+    			binaries[i] = new  char[4096];
 		}
 		clGetProgramInfo(argp->program, argp->param_name, argp->param_value_size, profile, NULL);
+		} else {
+			profile = (char * ) malloc(argp->param_value_size);
+		clGetPlatformInfo(argp->platform, argp->param_name, argp->param_value_size, profile, NULL);
+		}	
 	}
 	if(profile) {
-		retp->param_value.buff_ptr = *profile;
+		retp->param_value.buff_ptr = profile;
 		retp->param_value.buff_len = argp->param_value_size;
 		retp->param_value_size = argp->param_value_size;
-	} else {
+	} else if(binaries) {
+		retp->param_value.buff_ptr = *binaries;
+		retp->param_value.buff_len = argp->param_value_size;
+		retp->param_value_size = argp->param_value_size;
+	} else
+	 {
 		retp->param_value.buff_ptr = "\0";
 		retp->param_value.buff_len = sizeof(char);
 		retp->param_value_size = size;
@@ -272,7 +283,7 @@ void clCreateProgramWithSource_server(create_program_with_source_ *argp, create_
 
         cl_program program = 0;
 
-        //fprintf(stderr,"[clCreateProgramWithSource_server] context %p\n", argp->context);
+        fprintf(stderr,"[clCreateProgramWithSource_server] context %p program %s\n", argp->context,argp->program_str.buff_ptr);
 
         program  = clCreateProgramWithSource((cl_context)(argp->context), 1, (const char **)&(argp->program_str.buff_ptr), NULL, &err);
 
