@@ -83,10 +83,10 @@ void clGetProgramInfo_server(get_program_info_ *argp, get_program_info_ *retp){
 	char * profile = NULL;
 	printf("clGetProgramInfo_server program = %d param name = %d \n",argp->program,argp->param_name);
 	if(argp->is_buff_null) {
-		clGetPlatformInfo(argp->program, argp->param_name, NULL, NULL, &size);
+		clGetProgramInfo(argp->program, argp->param_name, NULL, NULL, &size);
 	} else {
 		profile = (char * ) malloc(argp->param_value_size);
-		clGetPlatformInfo(argp->program, argp->param_name, argp->param_value_size, profile, NULL);
+		clGetProgramInfo(argp->program, argp->param_name, argp->param_value_size, profile, NULL);
 	}
 	if(profile) {
 		retp->param_value.buff_ptr = profile;
