@@ -612,9 +612,7 @@ cl_program clCreateProgramWithSource (cl_context context, cl_uint count, const c
 		program_str_size += lengths[i];	
 	    }	    
 	}
-	#ifdef DEBUG
-	printf("[clCreateProgramWithSource interposed] program_str_size %d\n", program_str_size);
-	 #endif
+	
 
 	char *program_str = (char *)malloc(program_str_size);
 	int program_str_offset = 0;
@@ -633,6 +631,9 @@ cl_program clCreateProgramWithSource (cl_context context, cl_uint count, const c
 	    }
 	}
 	program_str[program_str_offset] = '\0';//Null terminate the string
+	#ifdef DEBUG
+	printf("[clCreateProgramWithSource interposed] program_str_size %d program = %s \n", program_str_size,program_str);
+	 #endif
 
 	cl_context_ *context_distr = (cl_context_ *)context;
 	int num_tuples = context_distr->num_context_tuples;
