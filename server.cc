@@ -59,6 +59,7 @@ void clGetPlatformInfo_server(get_platform_info_ *argp, get_platform_info_ *retp
 	retp->err = CL_SUCCESS;
 	size_t size = 0;
 	char * profile = NULL;
+	printf("clGetPlatformInfo_server platform id = %d param name = %d \n",argp->platform,argp->param_name);
 	if(argp->is_buff_null) {
 		clGetPlatformInfo(argp->platform, argp->param_name, NULL, NULL, &size);
 	} else {
@@ -80,6 +81,7 @@ void clGetDeviceInfo_server(get_device_info_ *argp, get_device_info_ *retp){
 	retp->err = CL_SUCCESS;
 	size_t size = 0;
 	char * profile = NULL;
+	printf("clGetDeviceInfo_server device id = %d param name = %d \n",argp->device,argp->param_name);
 	if(argp->is_buff_null) {
 		clGetDeviceInfo(argp->device, argp->param_name, NULL, NULL, &size);
 	} else {

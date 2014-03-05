@@ -2033,6 +2033,9 @@ cl_int clGetPlatformInfo(	cl_platform_id platform,
 	} else {
 		arg_pkt.is_buff_null = 0;
 	}
+	#ifdef DEBUG 
+	printf("clGetPlatformInfo platform id = %d param name = %d \n",clhandle,param_name);
+	#endif
 
 
 	arg_pkt.platform = clhandle;
@@ -2088,7 +2091,9 @@ printf("Intercepted clGetDeviceInfo call\n");
 	} else {
 		arg_pkt.is_buff_null = 0;
 	}
-
+	#ifdef DEBUG 
+	printf("clGetDeviceInfo device id = %d param name = %d \n",clhandle,param_name);
+	#endif
 	arg_pkt.device = clhandle;
 	arg_pkt.param_name = param_name;
 	arg_pkt.param_value_size = param_value_size;
