@@ -81,7 +81,7 @@ void clGetProgramInfo_server(get_program_info_ *argp, get_program_info_ *retp){
 	retp->err = CL_SUCCESS;
 	size_t size = 0;
 	char * profile = NULL;
-	fprintf(stderr,"clGetProgramInfo_server program = %d param name = %d \n",argp->program,argp->param_name);
+	fprintf(stderr,"clGetProgramInfo_server program = %d param name = %d size = %d \n",argp->program,argp->param_name,argp->param_value_size);
 	if(argp->is_buff_null) {
 		fprintf(stderr,"clGetProgramInfo first case\n");
 		clGetProgramInfo(argp->program, argp->param_name, NULL, NULL, &size);
