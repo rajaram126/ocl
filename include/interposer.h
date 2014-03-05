@@ -39,6 +39,7 @@ typedef struct get_platform_info_t {
 	cl_platform_info param_name;
 	size_t param_value_size;
 	buff_ param_value;
+	int is_buff_null;
 }get_platform_info_;
 
 
@@ -58,6 +59,7 @@ typedef struct get_device_info_t {
 	cl_device_info param_name;
 	size_t param_value_size;
 	buff_ param_value;
+	int is_buff_null;
 }get_device_info_;
 
 

@@ -55,8 +55,47 @@ void clGetPlatformIDs_server(get_platform_ids_ *argp, get_platform_ids_ *retp){
 	}
 }
 
+void clGetPlatformInfo_server(get_platform_info_ *argp, get_platform_info_ *retp){
+	retp->err = CL_SUCCESS;
+	size_t size = 0;
+	char * profile = NULL;
+	if(argp->is_buff_null) {
+		clGetPlatformInfo(argp->platform, argp->param_name, NULL, NULL, &size);
+	} else {
+		profile = (char * ) malloc(argp->param_value_size);
+		clGetPlatformInfo(argp->platform, argp->param_name, argp->param_value_size, profile, NULL);
+	}
+	if(profile) {
+		retp->param_value.buff_ptr = profile;
+		retp->param_value.buff_len = argp->param_value_size;
+		retp->param_value_size = argp->param_value_size;
+	} else {
+		retp->param_value.buff_ptr = "\0";
+		retp->param_value.buff_len = 0;
+		retp->param_value_size = size;
+	}
+}
 
-
+void clGetDeviceInfo_server(get_device_info_ *argp, get_device_info_ *retp){
+	retp->err = CL_SUCCESS;
+	size_t size = 0;
+	char * profile = NULL;
+	if(argp->is_buff_null) {
+		clGetPlatformInfo(argp->device, argp->param_name, NULL, NULL, &size);
+	} else {
+		profile = (char * ) malloc(argp->param_value_size);
+		clGetPlatformInfo(argp->device, argp->param_name, argp->param_value_size, profile, NULL);
+	}
+	if(profile) {
+		retp->param_value.buff_ptr = profile;
+		retp->param_value.buff_len = argp->param_value_size;
+		retp->param_value_size = argp->param_value_size;
+	} else {
+		retp->param_value.buff_ptr = "\0";
+		retp->param_value.buff_len = 0;
+		retp->param_value_size = size;
+	}
+}
 void clGetDeviceIDs_server(get_device_ids_ *argp, get_device_ids_ *retp){
 
 	cl_int err = CL_SUCCESS;

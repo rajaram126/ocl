@@ -2028,7 +2028,11 @@ cl_int clGetPlatformInfo(	cl_platform_id platform,
 	arg_pkt.param_value.buff_ptr = "\0";
 	arg_pkt.param_value.buff_len = sizeof(char);
 	ret_pkt.param_value.buff_ptr = NULL;
-
+	if(param_value == NULL) {
+		arg_pkt.is_buff_null = 1;
+	} else {
+		arg_pkt.is_buff_null = 0;
+	}
 
 
 	arg_pkt.platform = clhandle;
@@ -2052,7 +2056,7 @@ cl_int clGetPlatformInfo(	cl_platform_id platform,
 	ret_pkt = * (get_platform_info_*) zmq_msg_data(&reply);
 	
 	if(param_value_size_ret != NULL) {
-		*param_value_size_ret = ret_pkt.param_value.buff_len;
+		*param_value_size_ret = ret_pkt.param_value_size;
 	}	
 	if (ret_pkt.param_value.buff_len && param_value != NULL) {
 		memcpy(param_value, zmq_msg_data(&reply_buffer), ret_pkt.param_value.buff_len);
@@ -2079,12 +2083,16 @@ printf("Intercepted clGetDeviceInfo call\n");
 	arg_pkt.param_value.buff_ptr = "\0";
 	arg_pkt.param_value.buff_len = sizeof(char);
 	ret_pkt.param_value.buff_ptr = NULL;
-
-
+	if(param_value == NULL) {
+		arg_pkt.is_buff_null = 1;
+	} else {
+		arg_pkt.is_buff_null = 0;
+	}
 
 	arg_pkt.device = clhandle;
 	arg_pkt.param_name = param_name;
 	arg_pkt.param_value_size = param_value_size;
+	
 	void *context = zmq_ctx_new ();
         void *requester = zmq_socket (context, ZMQ_REQ);
         connect_zmq(node , requester);
@@ -2103,7 +2111,7 @@ printf("Intercepted clGetDeviceInfo call\n");
 	ret_pkt = * (get_device_info_*) zmq_msg_data(&reply);
 	
 	if(param_value_size_ret != NULL) {
-		*param_value_size_ret = ret_pkt.param_value.buff_len;
+		*param_value_size_ret = ret_pkt.param_value_size;
 	}	
 	if (ret_pkt.param_value.buff_len && param_value != NULL) {
 		memcpy(param_value, zmq_msg_data(&reply_buffer), ret_pkt.param_value.buff_len);
