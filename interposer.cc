@@ -632,7 +632,7 @@ cl_program clCreateProgramWithSource (cl_context context, cl_uint count, const c
 	}
 	program_str[program_str_offset] = '\0';//Null terminate the string
 	#ifdef DEBUG
-	printf("[clCreateProgramWithSource interposed] program_str_size %d program = %s \n", program_str_size,program_str);
+	//printf("[clCreateProgramWithSource interposed] program_str_size %d program = %s \n", program_str_size,program_str);
 	 #endif
 
 	cl_context_ *context_distr = (cl_context_ *)context;
