@@ -94,7 +94,7 @@ int i;
 		for ( i=0;i<(int)argp->param_value_size;++i) {
     			binaries[i] = new  char[4096];
 		}
-		clGetProgramInfo(argp->program, argp->param_name, argp->param_value_size, profile, NULL);
+		clGetProgramInfo(argp->platform, argp->param_name, argp->param_value_size, binaries, NULL);
 		} else {
 			profile = (char * ) malloc(argp->param_value_size);
 		clGetPlatformInfo(argp->platform, argp->param_name, argp->param_value_size, profile, NULL);
