@@ -283,7 +283,7 @@ void clCreateProgramWithSource_server(create_program_with_source_ *argp, create_
 
         cl_program program = 0;
 
-       // fprintf(stderr,"[clCreateProgramWithSource_server] context %p program %s\n", argp->context,argp->program_str.buff_ptr);
+        fprintf(stderr,"[clCreateProgramWithSource_server] context %p program %s", argp->context,argp->program_str.buff_ptr);
 
         program  = clCreateProgramWithSource((cl_context)(argp->context), 1, (const char **)&(argp->program_str.buff_ptr), NULL, &err);
 
@@ -298,7 +298,7 @@ void clCreateProgramWithSource_server(create_program_with_source_ *argp, create_
 
 	retp->program = (unsigned long)program;
 
-        //fprintf(stderr,"[clCreateProgramWithSource_server] program created %p\n", retp->program);
+        fprintf(stderr,"[clCreateProgramWithSource_server] program created %p\n", retp->program);
 
 }
 
