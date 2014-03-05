@@ -323,9 +323,9 @@ void clCreateKernel_server(create_kernel_ *argp, create_kernel_ *retp){
 
         cl_kernel kernel = 0;
 
-        //fprintf(stderr,"[clCreateKernel_server] program %p\n", argp->program);
-        //fprintf(stderr,"[clCreateKernel_server] kernel_name %s\n", argp->kernel_name.buff_ptr);
-        //fprintf(stderr,"[clCreateKernel_server] kernel_name length %d\n", argp->kernel_name.buff_len);
+        fprintf(stderr,"[clCreateKernel_server] program %p\n", argp->program);
+        fprintf(stderr,"[clCreateKernel_server] kernel_name %s\n", argp->kernel_name.buff_ptr);
+        fprintf(stderr,"[clCreateKernel_server] kernel_name length %d\n", argp->kernel_name.buff_len);
 
 	char *kernel_name = (char *)calloc(argp->kernel_name.buff_len + 1, sizeof(char));
 	for(int i=0; i<argp->kernel_name.buff_len; i++){
