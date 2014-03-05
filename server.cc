@@ -81,10 +81,10 @@ void clGetDeviceInfo_server(get_device_info_ *argp, get_device_info_ *retp){
 	size_t size = 0;
 	char * profile = NULL;
 	if(argp->is_buff_null) {
-		clGetPlatformInfo(argp->device, argp->param_name, NULL, NULL, &size);
+		clGetDeviceInfo(argp->device, argp->param_name, NULL, NULL, &size);
 	} else {
 		profile = (char * ) malloc(argp->param_value_size);
-		clGetPlatformInfo(argp->device, argp->param_name, argp->param_value_size, profile, NULL);
+		clGetDeviceInfo(argp->device, argp->param_name, argp->param_value_size, profile, NULL);
 	}
 	if(profile) {
 		retp->param_value.buff_ptr = profile;
