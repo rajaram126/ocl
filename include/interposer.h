@@ -16,6 +16,7 @@
 #define ENQUEUE_NDRANGE_KERNEL 12
 #define GET_PLATFORM_INFO 13
 #define GET_DEVICE_INFO 14
+#define GET_PROGRAM_INFO 15
 
 typedef int bool_t;
 typedef struct buff_t {
@@ -62,6 +63,15 @@ typedef struct get_device_info_t {
 	int is_buff_null;
 }get_device_info_;
 
+
+typedef struct get_program_info_t {
+	int err;
+	cl_program program;
+	cl_device_info param_name;
+	size_t param_value_size;
+	buff_ param_value;
+	int is_buff_null;
+}get_program_info_;
 
 typedef struct create_context_t {
 	unsigned long context;

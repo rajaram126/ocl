@@ -2142,6 +2142,62 @@ cl_int clGetDeviceInfo(	cl_device_id device,
 	return CL_SUCCESS;
 	
 	}
+
+cl_int clGetProgramInfo (	cl_program program,
+ 	cl_program_info param_name,
+ 	size_t param_value_size,
+ 	void *param_value,
+ 	size_t *param_value_size_ret) {
+	
+	cl_int err = CL_SUCCESS;
+	cl_program_ *program_distr = (cl_program_ *)program;
+	char *node = program_distr->program_tuples[0].node;
+	cl_device_id clhandle = program_distr->program_tuples[0].clhandle;
+	get_program_info_ arg_pkt, ret_pkt;
+	arg_pkt.param_value.buff_ptr = "\0";
+	arg_pkt.param_value.buff_len = sizeof(char);
+	ret_pkt.param_value.buff_ptr = NULL;
+	if(param_value == NULL || param_value_size == NULL) {
+		arg_pkt.is_buff_null = 1;
+	} else {
+		arg_pkt.is_buff_null = 0;
+	}
+	#ifdef DEBUG 
+	printf("[clGetProgramInfo] device id = %d param name = %d \n",clhandle,param_name);
+	#endif
+	arg_pkt.program = clhandle;
+	arg_pkt.param_name = param_name;
+	arg_pkt.param_value_size = param_value_size;
+	
+	void *context = zmq_ctx_new ();
+        void *requester = zmq_socket (context, ZMQ_REQ);
+        connect_zmq(node , requester);
+        zmq_msg_t header,message,message_buffer,reply,reply_buffer;
+	invocation_header hd;
+        hd.api_id = GET_PROGRAM_INFO;
+	zmq_msg_init_size(&header, sizeof(hd));
+        memcpy(zmq_msg_data(&header), &hd, sizeof(hd));
+        zmq_msg_init_size(&message, sizeof(arg_pkt));
+        memcpy(zmq_msg_data(&message), &arg_pkt, sizeof(arg_pkt));
+        zmq_msg_init_size(&message_buffer, sizeof(char));
+        memcpy(zmq_msg_data(&message_buffer), arg_pkt.param_value.buff_ptr, sizeof(char));
+        zmq_msg_init(&reply);
+        zmq_msg_init(&reply_buffer);
+        invoke_zmq(requester,&header, &message, &message_buffer, &reply,&reply_buffer);
+	ret_pkt = * (get_program_info_*) zmq_msg_data(&reply);
+	
+	if(param_value_size_ret != NULL) {
+		*param_value_size_ret = ret_pkt.param_value_size;
+	}	
+	if (ret_pkt.param_value.buff_len && param_value != NULL) {
+		memcpy(param_value, zmq_msg_data(&reply_buffer), ret_pkt.param_value.buff_len);
+	}
+	cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
+	zmq_close (requester);
+        zmq_ctx_destroy (context);
+	return CL_SUCCESS;
+	
+	}
 	
 	
 cl_int clGetProgramBuildInfo (	cl_program  program,
@@ -2156,15 +2212,7 @@ return CL_SUCCESS;
 	}
 	
 	
-cl_int clGetProgramInfo (	cl_program program,
- 	cl_program_info param_name,
- 	size_t param_value_size,
- 	void *param_value,
- 	size_t *param_value_size_ret) {
-	printf("Intercepted clGetProgramInfo call\n");
-	return CL_SUCCESS;
-	
-	}
+
 	
 	
 cl_int clGetSamplerInfo (	cl_sampler sampler,
