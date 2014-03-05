@@ -15,7 +15,7 @@
 #define ENQUEUE_READ_BUFFER 11
 #define ENQUEUE_NDRANGE_KERNEL 12
 #define GET_PLATFORM_INFO 13
-#define GET_DEVICE_INFO 13
+#define GET_DEVICE_INFO 14
 
 typedef int bool_t;
 typedef struct buff_t {
