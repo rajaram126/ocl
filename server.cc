@@ -95,7 +95,7 @@ int i;
 		clGetProgramInfo(argp->program, argp->param_name, argp->param_value_size, profile, NULL);
 	}
 	if(profile) {
-		retp->param_value.buff_ptr = profile;
+		retp->param_value.buff_ptr = &profile;
 		retp->param_value.buff_len = argp->param_value_size;
 		retp->param_value_size = argp->param_value_size;
 	} else {
