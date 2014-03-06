@@ -584,6 +584,8 @@ zmq_close (requester);
 }
 
 
+
+
 cl_program clCreateProgramWithSource (cl_context context, cl_uint count, const char **strings,const size_t *lengths, cl_int *errcode_ret){
 
 	cl_program program = 0;
@@ -1585,7 +1587,50 @@ cl_sampler clCreateSampler (	cl_context context,
  	cl_int *errcode_ret) 
 	{
 	printf("Intercepted clCreateSubBuffer call\n");
-	return NULL;
+	int num_tuples = 1;
+	cl_mem_ *mem_distr = (cl_mem_ *)malloc(sizeof(cl_mem_));
+	mem_distr->mem_tuples = (cl_mem_elem_ *)malloc(num_tuples * sizeof(cl_mem_elem_));
+	mem_distr->num_mem_tuples = num_tuples;
+	
+	cl_mem_ *in_mem = (cl_mem_ *) buffer;
+	char *node = in_mem->mem_tuples[0].node;
+	cl_mem mem = in_mem->mem_tuples[0].clhandle;
+	create_sub_buffer_ arg_pkt, ret_pkt;
+	arg_pkt.buffer = mem;
+	arg_pkt.flags = flags;
+	arg_pkt.data.buff_ptr = "\0";
+	arg_pkt.data.buff_len = sizeof(char);
+	
+	void *context = zmq_ctx_new ();
+        void *requester = zmq_socket (context, ZMQ_REQ);
+        connect_zmq(node , requester);
+        zmq_msg_t header,message,message_buffer,reply,reply_buffer;
+        invocation_header hd;
+        hd.api_id = CREATE_SUB_BUFFER;
+        zmq_msg_init_size(&header, sizeof(hd));
+        memcpy(zmq_msg_data(&header), &hd, sizeof(hd));
+        zmq_msg_init_size(&message, sizeof(arg_pkt));
+        memcpy(zmq_msg_data(&message), &arg_pkt, sizeof(arg_pkt));
+        zmq_msg_init_size(&message_buffer,arg_pkt.data.buff_len);
+        memcpy(zmq_msg_data(&message_buffer), arg_pkt.data.buff_ptr,arg_pkt.data.buff_len);
+        zmq_msg_init(&reply);
+        zmq_msg_init(&reply_buffer);
+        invoke_zmq(requester,&header, &message, &message_buffer, &reply,&reply_buffer);
+
+        ret_pkt = * (create_buffer_*) zmq_msg_data(&reply);
+	*buffer_create_info = ret_pkt.buffer_create_info;
+	mem_distr->mem_tuples[0].node = node;
+	mem_distr->mem_tuples[0].clhandle = ret_pkt.buffer;
+        cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
+	zmq_close (requester);
+    	zmq_ctx_destroy (context); 
+	if(errcode_ret != NULL) {
+		errcode_ret = CL_SUCCESS;
+	}	
+	
+	//TODO verify
+	mems_created.push_back(mem_distr);
+	return (cl_mem) mem_distr;
 	}
 	
 	

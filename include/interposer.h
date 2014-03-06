@@ -17,6 +17,7 @@
 #define GET_PLATFORM_INFO 13
 #define GET_DEVICE_INFO 14
 #define GET_PROGRAM_INFO 15
+#define CREATE_SUB_BUFFER 16
 
 typedef int bool_t;
 typedef struct buff_t {
@@ -27,6 +28,14 @@ typedef struct buff_t {
 typedef struct invocation_header_t {
 int api_id;
 }invocation_header;
+
+typedef struct create_sub_buffer_t {
+	int err;
+	cl_mem buffer;
+	cl_mem_flags flags;
+	cl_buffer_region buffer_create_info;
+	buff_ data; 
+}create_sub_buffer_;
 
 typedef struct get_platform_ids_t {
 	int err;
