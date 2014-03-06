@@ -333,7 +333,7 @@ void clBuildProgram_server(build_program_ *argp, build_program_ *retp){
 
 }
 
-void clCreateSubBuffer_server(flush_ *argp, flush_ *retp){ 
+void clCreateSubBuffer_server(create_sub_buffer_ *argp, create_sub_buffer_ *retp){ 
 	
 	fprintf(stderr,"[clCreateSubBuffer_server] mem %p\n", argp->buffer);
 	cl_mem  ret;
@@ -347,7 +347,7 @@ void clCreateSubBuffer_server(flush_ *argp, flush_ *retp){
 
 }
 
-void clFlush_server(create_sub_buffer_ *argp, create_sub_buffer_ *retp){ 
+void clFlush_server(flush_ *argp, flush_ *retp){ 
 	
 	
 	cl_int err;
