@@ -2103,7 +2103,8 @@ cl_int clGetKernelWorkGroupInfo (	cl_kernel kernel,
 	#ifdef DEBUG 
 	printf("[clGetKernelWorkGroupInfo] device id = %d param name = %d \n",device_distr->clhandle,param_name);
 	#endif
-	arg_pkt.kernel = kernel_distr->clhandle
+//TODO fix
+	arg_pkt.kernel = kernel_distr->kernel_tuples[0].clhandle;
 	arg_pkt.device = device_distr->clhandle;
 	arg_pkt.param_name = param_name;
 	arg_pkt.param_value_size = param_value_size;
