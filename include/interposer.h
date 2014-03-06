@@ -19,6 +19,7 @@
 #define GET_PROGRAM_INFO 15
 #define CREATE_SUB_BUFFER 16
 #define CL_FLUSH 17
+#define GET_KERNEL_WORKGROUP_INFO 18
 
 typedef int bool_t;
 typedef struct buff_t {
@@ -80,6 +81,16 @@ typedef struct get_device_info_t {
 	buff_ param_value;
 	int is_buff_null;
 }get_device_info_;
+
+typedef struct get_kernel_workgroup_info_t {
+	int err;
+	cl_kernel kernel
+	cl_device_id device;
+	cl_kernel_work_group_info param_name;
+	size_t param_value_size;
+	buff_ param_value;
+	int is_buff_null;
+}get_kernel_workgroup_info_;
 
 
 typedef struct get_program_info_t {
