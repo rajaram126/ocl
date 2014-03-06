@@ -559,6 +559,29 @@ main() {
 						zmq_msg_close(&reply);
 						break;
 						}
+			case CREATE_SUB_BUFFER: {
+						create_sub_buffer_  arg_pkt,ret_pkt;
+						
+						zmq_msg_t message,message_buffer,reply,reply_buffer;
+						zmq_msg_init(&message);
+						zmq_msg_init(&message_buffer);
+						zmq_msg_recv(&message, responder, 0);
+						arg_pkt = * (create_sub_buffer_*) zmq_msg_data(&message);
+						zmq_msg_recv(&message_buffer, responder, 0);
+						arg_pkt.platforms.buff_ptr = (char *) zmq_msg_data(&message_buffer);
+						clCreateSubBuffer_server(&arg_pkt, &ret_pkt);
+						zmq_msg_init_size(&reply, sizeof(ret_pkt));
+						zmq_msg_init_size(&reply_buffer,ret_pkt.data.buff_len);
+						memcpy(zmq_msg_data(&reply), &ret_pkt, sizeof(ret_pkt));
+						memcpy(zmq_msg_data(&reply_buffer), ret_pkt.data.buff_ptr,ret_pkt.data.buff_len);
+						zmq_msg_send(&reply, responder, ZMQ_SNDMORE);
+						zmq_msg_send(&reply_buffer, responder, 0);
+						zmq_msg_close(&message);
+						zmq_msg_close(&message_buffer);
+						zmq_msg_close(&reply);
+						break;
+						}
+						
 			case GET_PLATFORM_INFO: {
 						get_platform_info_  arg_pkt,ret_pkt;
 						
