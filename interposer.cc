@@ -1617,7 +1617,7 @@ cl_sampler clCreateSampler (	cl_context context,
         zmq_msg_init(&reply_buffer);
         invoke_zmq(requester,&header, &message, &message_buffer, &reply,&reply_buffer);
 
-        ret_pkt = * (create_buffer_*) zmq_msg_data(&reply);
+        ret_pkt = * (create_sub_buffer_*) zmq_msg_data(&reply);
 	*buffer_create_info = ret_pkt.buffer_create_info;
 	mem_distr->mem_tuples[0].node = node;
 	mem_distr->mem_tuples[0].clhandle = ret_pkt.buffer;
