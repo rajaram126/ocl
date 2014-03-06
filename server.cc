@@ -347,6 +347,20 @@ void clCreateSubBuffer_server(create_sub_buffer_ *argp, create_sub_buffer_ *retp
 
 }
 
+void clFlush_server(create_sub_buffer_ *argp, create_sub_buffer_ *retp){ 
+	
+	
+	cl_int err;
+	err = clFlush(argp->command_queue);
+	if(err != CL_SUCCESS){
+                fprintf(stderr,"clFlush failed with err %d\n", err);
+                exit(-1);
+        }
+	retp->err = err;
+	retp->data.buff_ptr = "\0";
+	retp->data.buff_len = sizeof(char);
+}
+
 
 void clCreateKernel_server(create_kernel_ *argp, create_kernel_ *retp){
 
@@ -570,6 +584,28 @@ main() {
 						zmq_msg_recv(&message_buffer, responder, 0);
 						arg_pkt.data.buff_ptr = (char *) zmq_msg_data(&message_buffer);
 						clCreateSubBuffer_server(&arg_pkt, &ret_pkt);
+						zmq_msg_init_size(&reply, sizeof(ret_pkt));
+						zmq_msg_init_size(&reply_buffer,ret_pkt.data.buff_len);
+						memcpy(zmq_msg_data(&reply), &ret_pkt, sizeof(ret_pkt));
+						memcpy(zmq_msg_data(&reply_buffer), ret_pkt.data.buff_ptr,ret_pkt.data.buff_len);
+						zmq_msg_send(&reply, responder, ZMQ_SNDMORE);
+						zmq_msg_send(&reply_buffer, responder, 0);
+						zmq_msg_close(&message);
+						zmq_msg_close(&message_buffer);
+						zmq_msg_close(&reply);
+						break;
+						}
+			case CL_FLUSH:		{
+						flush_  arg_pkt,ret_pkt;
+						
+						zmq_msg_t message,message_buffer,reply,reply_buffer;
+						zmq_msg_init(&message);
+						zmq_msg_init(&message_buffer);
+						zmq_msg_recv(&message, responder, 0);
+						arg_pkt = * (flush_*) zmq_msg_data(&message);
+						zmq_msg_recv(&message_buffer, responder, 0);
+						arg_pkt.data.buff_ptr = (char *) zmq_msg_data(&message_buffer);
+						clFlush_server(&arg_pkt, &ret_pkt);
 						zmq_msg_init_size(&reply, sizeof(ret_pkt));
 						zmq_msg_init_size(&reply_buffer,ret_pkt.data.buff_len);
 						memcpy(zmq_msg_data(&reply), &ret_pkt, sizeof(ret_pkt));
