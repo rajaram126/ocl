@@ -84,7 +84,7 @@ typedef struct get_device_info_t {
 
 typedef struct get_kernel_workgroup_info_t {
 	int err;
-	cl_kernel kernel
+	cl_kernel kernel;
 	cl_device_id device;
 	cl_kernel_work_group_info param_name;
 	size_t param_value_size;
