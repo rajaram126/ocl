@@ -18,6 +18,7 @@
 #define GET_DEVICE_INFO 14
 #define GET_PROGRAM_INFO 15
 #define CREATE_SUB_BUFFER 16
+#define CL_FLUSH 17
 
 typedef int bool_t;
 typedef struct buff_t {
@@ -37,6 +38,13 @@ typedef struct create_sub_buffer_t {
 	cl_buffer_region buffer_create_info;
 	buff_ data; 
 }create_sub_buffer_;
+
+typedef struct flush_t {
+	cl_command_queue command_queue;
+	buff_ data;
+	int err;
+} flush_;
+
 
 typedef struct get_platform_ids_t {
 	int err;

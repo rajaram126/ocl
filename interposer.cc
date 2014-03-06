@@ -1974,8 +1974,37 @@ cl_int clEnqueueWriteImage (	cl_command_queue command_queue,
 	
 	
 cl_int clFlush (cl_command_queue command_queue) {
-printf("Intercepted clFlush call\n");
-return CL_SUCCESS;
+	printf("Intercepted clFlush call\n");
+	cl_command_queue_ *command_queue_distr = (cl_command_queue_ *)command_queue;
+	char *command_queue_node = command_queue_distr->node;
+	cl_command_queue command_queue_clhandle = command_queue_distr->clhandle;
+	flush_ arg_pkt, ret_pkt;
+	arg_pkt.command_queue = command_queue_clhandle;
+	arg_pkt.data.buff_ptr = "\0";
+	arg_pkt.data.buff_len = sizeof(char);
+	ret_pkt.data.buff_ptr = NULL;
+	void *context = zmq_ctx_new ();
+        void *requester = zmq_socket (context, ZMQ_REQ);
+        connect_zmq(node , requester);
+        zmq_msg_t header,message,message_buffer,reply,reply_buffer;
+	invocation_header hd;
+        hd.api_id = CL_FLUSH;
+	zmq_msg_init_size(&header, sizeof(hd));
+        memcpy(zmq_msg_data(&header), &hd, sizeof(hd));
+        zmq_msg_init_size(&message, sizeof(arg_pkt));
+        memcpy(zmq_msg_data(&message), &arg_pkt, sizeof(arg_pkt));
+        zmq_msg_init_size(&message_buffer, sizeof(char));
+        memcpy(zmq_msg_data(&message_buffer), arg_pkt.data.buff_ptr, sizeof(char));
+        zmq_msg_init(&reply);
+        zmq_msg_init(&reply_buffer);
+        invoke_zmq(requester,&header, &message, &message_buffer, &reply,&reply_buffer);
+	ret_pkt = * (flush_*) zmq_msg_data(&reply);
+
+	cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
+	zmq_close (requester);
+        zmq_ctx_destroy (context);
+	
+	return CL_SUCCESS;
 	
 	}
 	
