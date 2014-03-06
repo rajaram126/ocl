@@ -144,7 +144,7 @@ void clGetKernelWorkGroupInfo_server(get_kernel_workgroup_info_ *argp, get_kerne
 	char * profile = NULL;
 	printf("clGetKernelWorkGroupInfo_server device id = %d param name = %d \n",argp->device,argp->param_name);
 	if(argp->is_buff_null) {
-		clGetDeviceInfo(argp->kernel, argp->device, argp->param_name, NULL, NULL, &size);
+		clGetKernelWorkGroupInfo(argp->kernel, argp->device, argp->param_name, NULL, NULL, &size);
 	} else {
 		profile = (char * ) malloc(argp->param_value_size);
 		clGetKernelWorkGroupInfo(argp->kernel, argp->device, argp->param_name, argp->param_value_size, profile, NULL);
