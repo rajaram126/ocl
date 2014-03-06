@@ -472,13 +472,13 @@ void clEnqueueWriteBuffer_server(enqueue_write_buffer_ *argp, enqueue_write_buff
 
 	cl_int err = CL_SUCCESS;
 
-        //fprintf(stderr,"[clEnqueueWriteBuffer_server] mem %p\n", argp->mem);
-        //fprintf(stderr,"[clEnqueueWriteBuffer_server] command queue %p\n", argp->command_queue);
+        //fprintf(stderr,"[clEnqueueFillBuffer_server] mem %p\n", argp->mem);
+        //fprintf(stderr,"[clEnqueueFillBuffer_server] command queue %p\n", argp->command_queue);
 
-        err  = clEnqueueWriteBuffer((cl_command_queue)(argp->command_queue), (cl_mem)(argp->mem), argp->offset, argp->size, (void *)(argp->data.buff_ptr), 0, NULL, NULL);
+        err  = clEnqueueFillBuffer((cl_command_queue)(argp->command_queue), (cl_mem)(argp->mem), argp->offset, argp->size, (void *)(argp->data.buff_ptr), 0, NULL, NULL);
 
         if(err != CL_SUCCESS){
-                //fprintf(stderr,"clEnqueueWriteBuffer failed with err %d\n", err);
+                fprintf(stderr,"clEnqueueFillBuffer failed with err %d\n", err);
                 exit(-1);
         }
 	retp->err = err;
@@ -486,7 +486,7 @@ void clEnqueueWriteBuffer_server(enqueue_write_buffer_ *argp, enqueue_write_buff
 	retp->data.buff_ptr = "\0";
 	retp->data.buff_len = sizeof(char);
 
-        //fprintf(stderr,"[clEnqueueWriteBuffer_server]err returned %d\n", retp->err);
+        //fprintf(stderr,"[clEnqueueFillBuffer_server]err returned %d\n", retp->err);
 
 }
 
