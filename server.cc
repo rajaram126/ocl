@@ -137,6 +137,28 @@ void clGetDeviceInfo_server(get_device_info_ *argp, get_device_info_ *retp){
 		retp->param_value_size = size;
 	}
 }
+
+void clGetKernelWorkGroupInfo_server(get_kernel_workgroup_info_ *argp, get_kernel_workgroup_info_ *retp){
+	retp->err = CL_SUCCESS;
+	size_t size = 0;
+	char * profile = NULL;
+	printf("clGetKernelWorkGroupInfo_server device id = %d param name = %d \n",argp->device,argp->param_name);
+	if(argp->is_buff_null) {
+		clGetDeviceInfo(argp->kernel, argp->device, argp->param_name, NULL, NULL, &size);
+	} else {
+		profile = (char * ) malloc(argp->param_value_size);
+		clGetKernelWorkGroupInfo(argp->kernel, argp->device, argp->param_name, argp->param_value_size, profile, NULL);
+	}
+	if(profile) {
+		retp->param_value.buff_ptr = profile;
+		retp->param_value.buff_len = argp->param_value_size;
+		retp->param_value_size = argp->param_value_size;
+	} else {
+		retp->param_value.buff_ptr = "\0";
+		retp->param_value.buff_len = sizeof(char);
+		retp->param_value_size = size;
+	}
+} 
 void clGetDeviceIDs_server(get_device_ids_ *argp, get_device_ids_ *retp){
 
 	cl_int err = CL_SUCCESS;
@@ -653,6 +675,30 @@ main() {
 						zmq_msg_recv(&message_buffer, responder, 0);
 						arg_pkt.param_value.buff_ptr = (char *) zmq_msg_data(&message_buffer);
 						clGetDeviceInfo_server(&arg_pkt, &ret_pkt);
+						zmq_msg_init_size(&reply, sizeof(ret_pkt));
+						
+						zmq_msg_init_size(&reply_buffer,ret_pkt.param_value.buff_len);
+	
+						memcpy(zmq_msg_data(&reply), &ret_pkt, sizeof(ret_pkt));
+						memcpy(zmq_msg_data(&reply_buffer), ret_pkt.param_value.buff_ptr,ret_pkt.param_value.buff_len);
+						zmq_msg_send(&reply, responder, ZMQ_SNDMORE);
+						zmq_msg_send(&reply_buffer, responder, 0);
+						zmq_msg_close(&message);
+						zmq_msg_close(&message_buffer);
+						zmq_msg_close(&reply);
+						break;
+						}
+			case GET_KERNEL_WORKGROUP_INFO: {
+						get_kernel_workgroup_info_  arg_pkt,ret_pkt;
+						
+						zmq_msg_t message,message_buffer,reply,reply_buffer;
+						zmq_msg_init(&message);
+						zmq_msg_init(&message_buffer);
+						zmq_msg_recv(&message, responder, 0);
+						arg_pkt = * (get_kernel_workgroup_info_*) zmq_msg_data(&message);
+						zmq_msg_recv(&message_buffer, responder, 0);
+						arg_pkt.param_value.buff_ptr = (char *) zmq_msg_data(&message_buffer);
+						clGetKernelWorkGroupInfo_server(&arg_pkt, &ret_pkt);
 						zmq_msg_init_size(&reply, sizeof(ret_pkt));
 						
 						zmq_msg_init_size(&reply_buffer,ret_pkt.param_value.buff_len);
