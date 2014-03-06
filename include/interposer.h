@@ -20,6 +20,7 @@
 #define CREATE_SUB_BUFFER 16
 #define CL_FLUSH 17
 #define GET_KERNEL_WORKGROUP_INFO 18
+#define ENQUEUE_FILL_BUFFER 19
 
 typedef int bool_t;
 typedef struct buff_t {

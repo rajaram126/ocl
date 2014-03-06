@@ -1762,6 +1762,87 @@ cl_int clEnqueueFillBuffer (	cl_command_queue  command_queue ,
  	const cl_event  *event_wait_list ,
  	cl_event  *event ) {
 	printf("Intercepted clEnqueueFillBuffer call\n");
+		cl_int err = CL_SUCCESS;
+	char *mem_node;
+
+	cl_command_queue_ *command_queue_distr = (cl_command_queue_ *)command_queue;
+	char *command_queue_node = command_queue_distr->node;
+	cl_command_queue command_queue_clhandle = command_queue_distr->clhandle;
+
+	cl_mem_ *mem_distr = (cl_mem_ *)buffer;
+	#ifdef DEBUG
+	printf("[clEnqueueWriteBuffer interposed] mem_distr %p\n", mem_distr);
+	 #endif
+	int node_match_index = 0;
+	for(int i=0; i<mem_distr->num_mem_tuples; i++){
+
+		mem_node = mem_distr->mem_tuples[i].node;	
+		#ifdef DEBUG
+		printf("[clEnqueueWriteBuffer interposed] mem_distr->mem_tuples[%d].node %s\n", i, mem_distr->mem_tuples[i].node);
+	
+		printf("[clEnqueueWriteBuffer interposed] mem_distr->mem_tuples[%d].clhandle %p\n", i, mem_distr->mem_tuples[i].clhandle);
+		 #endif
+		if(mem_node != command_queue_node){
+			continue;
+		}
+
+		node_match_index = i;
+		break;
+
+	}
+
+	assert(mem_node == command_queue_node);
+
+	cl_mem mem_clhandle = mem_distr->mem_tuples[node_match_index].clhandle;
+	#ifdef DEBUG
+	printf("[clEnqueueWriteBuffer interposed] mem_clhandle %p\n", mem_clhandle);
+
+	 #endif
+
+
+	enqueue_write_buffer_ arg_pkt, ret_pkt;
+
+	arg_pkt.mem = (unsigned long)mem_clhandle;
+	arg_pkt.command_queue = (unsigned long)command_queue_clhandle;
+
+	arg_pkt.size = size;
+	arg_pkt.offset = offset;
+
+	arg_pkt.data.buff_ptr = (char *)pattern;
+	arg_pkt.data.buff_len = size;
+
+	ret_pkt.data.buff_ptr = NULL;
+	//
+	void *context = zmq_ctx_new ();
+        void *requester = zmq_socket (context, ZMQ_REQ);
+        connect_zmq(command_queue_node , requester);
+        zmq_msg_t header,message,message_buffer,reply,reply_buffer;
+        invocation_header hd;
+        hd.api_id = ENQUEUE_FILL_BUFFER;
+        zmq_msg_init_size(&header, sizeof(hd));
+        memcpy(zmq_msg_data(&header), &hd, sizeof(hd));
+        zmq_msg_init_size(&message, sizeof(arg_pkt));
+        memcpy(zmq_msg_data(&message), &arg_pkt, sizeof(arg_pkt));        
+	zmq_msg_init_size(&message_buffer,arg_pkt.data.buff_len);
+        memcpy(zmq_msg_data(&message_buffer), arg_pkt.data.buff_ptr,arg_pkt.data.buff_len);
+        zmq_msg_init(&reply);
+        zmq_msg_init(&reply_buffer);
+        invoke_zmq(requester,&header, &message, &message_buffer, &reply,&reply_buffer);
+
+        ret_pkt = * (enqueue_write_buffer_*) zmq_msg_data(&reply);
+                //Todo free
+        ret_pkt.data.buff_ptr = (char *) malloc(ret_pkt.data.buff_len);
+        memcpy(ret_pkt.data.buff_ptr, zmq_msg_data(&reply_buffer), ret_pkt.data.buff_len);
+        cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
+
+	zmq_close (requester);
+    	zmq_ctx_destroy (context);
+	#ifdef DEBUG
+	printf("[clEnqueueWriteBuffer interposed] err returned %d\n", ret_pkt.err);
+	 #endif
+
+	err = ret_pkt.err;
+	return err;
 	return CL_SUCCESS;
 
 }

@@ -83,13 +83,13 @@ void clGetProgramInfo_server(get_program_info_ *argp, get_program_info_ *retp){
 	 char * profile = NULL;
 	 char ** binaries = NULL;
 int i;
-	fprintf(stderr,"clGetProgramInfo_server program = %d param name = %d size = %d \n",argp->program,argp->param_name,argp->param_value_size);
+	//fprintf(stderr,"clGetProgramInfo_server program = %d param name = %d size = %d \n",argp->program,argp->param_name,argp->param_value_size);
 	if(argp->is_buff_null) {
 		fprintf(stderr,"clGetProgramInfo first case\n");
 		clGetProgramInfo(argp->program, argp->param_name, NULL, NULL, &size);
 	} else {
 		if(argp->param_name == 4454) {
-		fprintf(stderr,"clGetProgramInfo second case\n");
+		//fprintf(stderr,"clGetProgramInfo second case\n");
 		binaries = new  char*[argp->param_value_size];
 		for ( i=0;i<(int)argp->param_value_size;++i) {
     			binaries[i] = new  char[50000000];
