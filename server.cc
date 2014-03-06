@@ -142,7 +142,7 @@ void clGetKernelWorkGroupInfo_server(get_kernel_workgroup_info_ *argp, get_kerne
 	retp->err = CL_SUCCESS;
 	size_t size = 0;
 	char * profile = NULL;
-	printf("clGetKernelWorkGroupInfo_server device id = %d param name = %d \n",argp->device,argp->param_name);
+	//printf("clGetKernelWorkGroupInfo_server device id = %d param name = %d \n",argp->device,argp->param_name);
 	if(argp->is_buff_null) {
 		clGetKernelWorkGroupInfo(argp->kernel, argp->device, argp->param_name, NULL, NULL, &size);
 	} else {

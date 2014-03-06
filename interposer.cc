@@ -2434,7 +2434,7 @@ cl_int clRetainMemObject (	cl_mem memobj){
 	
 	
 cl_int clRetainProgram (	cl_program program){
-	printf("Intercepted clRetainProgram call\n");
+	//printf("Intercepted clRetainProgram call\n");
 	return CL_SUCCESS;
 	
 	}
