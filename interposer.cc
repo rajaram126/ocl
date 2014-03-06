@@ -557,8 +557,8 @@ cl_mem clCreateBuffer (cl_context context, cl_mem_flags flags, size_t size, void
         	ret_pkt.data.buff_ptr = (char *) malloc(ret_pkt.data.buff_len);
         	memcpy(ret_pkt.data.buff_ptr, zmq_msg_data(&reply_buffer), ret_pkt.data.buff_len);
         	cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
-zmq_close (requester);
-    zmq_ctx_destroy (context);
+		zmq_close (requester);
+    		zmq_ctx_destroy (context);
 		#ifdef DEBUG
 		printf("[clCreateBuffer interposed] mem returned %p\n", ret_pkt.mem);
 		 #endif
@@ -1586,7 +1586,7 @@ cl_sampler clCreateSampler (	cl_context context,
  	const void *buffer_create_info,
  	cl_int *errcode_ret) 
 	{
-	printf("Intercepted clCreateSubBuffer call\n");
+	//printf("Intercepted clCreateSubBuffer call\n");
 	int num_tuples = 1;
 	cl_mem_ *mem_distr = (cl_mem_ *)malloc(sizeof(cl_mem_));
 	mem_distr->mem_tuples = (cl_mem_elem_ *)malloc(num_tuples * sizeof(cl_mem_elem_));
@@ -1622,7 +1622,7 @@ cl_sampler clCreateSampler (	cl_context context,
         ret_pkt = * (create_sub_buffer_*) zmq_msg_data(&reply);
 	mem_distr->mem_tuples[0].node = node;
 	mem_distr->mem_tuples[0].clhandle = ret_pkt.buffer;
-	printf("Got back cm_mem %d\n",ret_pkt.buffer);
+	//printf("Got back cm_mem %d\n",ret_pkt.buffer);
         cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
 	zmq_close (requester);
     	zmq_ctx_destroy (context); 
@@ -1974,7 +1974,7 @@ cl_int clEnqueueWriteImage (	cl_command_queue command_queue,
 	
 	
 cl_int clFlush (cl_command_queue command_queue) {
-	printf("Intercepted clFlush call\n");
+	//printf("Intercepted clFlush call\n");
 	cl_command_queue_ *command_queue_distr = (cl_command_queue_ *)command_queue;
 	char *node = command_queue_distr->node;
 	cl_command_queue command_queue_clhandle = command_queue_distr->clhandle;
@@ -2085,7 +2085,7 @@ cl_int clGetKernelWorkGroupInfo (	cl_kernel kernel,
  	size_t param_value_size,
  	void *param_value,
  	size_t *param_value_size_ret){
-	printf("Intercepted clGetKernelWorkGroupInfo call\n");
+	//printf("Intercepted clGetKernelWorkGroupInfo call\n");
 	cl_kernel_ *kernel_distr = (cl_kernel_ *) kernel;
 	
 	cl_device_id_ *device_distr = (cl_device_id_ *)device;
