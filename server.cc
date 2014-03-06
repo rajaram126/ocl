@@ -568,7 +568,7 @@ main() {
 						zmq_msg_recv(&message, responder, 0);
 						arg_pkt = * (create_sub_buffer_*) zmq_msg_data(&message);
 						zmq_msg_recv(&message_buffer, responder, 0);
-						arg_pkt.platforms.buff_ptr = (char *) zmq_msg_data(&message_buffer);
+						arg_pkt.data.buff_ptr = (char *) zmq_msg_data(&message_buffer);
 						clCreateSubBuffer_server(&arg_pkt, &ret_pkt);
 						zmq_msg_init_size(&reply, sizeof(ret_pkt));
 						zmq_msg_init_size(&reply_buffer,ret_pkt.data.buff_len);
