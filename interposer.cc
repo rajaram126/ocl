@@ -1976,7 +1976,7 @@ cl_int clEnqueueWriteImage (	cl_command_queue command_queue,
 cl_int clFlush (cl_command_queue command_queue) {
 	printf("Intercepted clFlush call\n");
 	cl_command_queue_ *command_queue_distr = (cl_command_queue_ *)command_queue;
-	char *command_queue_node = command_queue_distr->node;
+	char *node = command_queue_distr->node;
 	cl_command_queue command_queue_clhandle = command_queue_distr->clhandle;
 	flush_ arg_pkt, ret_pkt;
 	arg_pkt.command_queue = command_queue_clhandle;
