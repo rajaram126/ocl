@@ -1761,7 +1761,7 @@ cl_int clEnqueueFillBuffer (	cl_command_queue  command_queue ,
  	cl_uint  num_events_in_wait_list ,
  	const cl_event  *event_wait_list ,
  	cl_event  *event ) {
-	printf("Intercepted clEnqueueFillBuffer call\n");
+	//printf("Intercepted clEnqueueFillBuffer call\n");
 		cl_int err = CL_SUCCESS;
 	char *mem_node;
 
@@ -1771,16 +1771,16 @@ cl_int clEnqueueFillBuffer (	cl_command_queue  command_queue ,
 
 	cl_mem_ *mem_distr = (cl_mem_ *)buffer;
 	#ifdef DEBUG
-	printf("[clEnqueueWriteBuffer interposed] mem_distr %p\n", mem_distr);
+	printf("[clEnqueueFillBuffer interposed] mem_distr %p\n", mem_distr);
 	 #endif
 	int node_match_index = 0;
 	for(int i=0; i<mem_distr->num_mem_tuples; i++){
 
 		mem_node = mem_distr->mem_tuples[i].node;	
 		#ifdef DEBUG
-		printf("[clEnqueueWriteBuffer interposed] mem_distr->mem_tuples[%d].node %s\n", i, mem_distr->mem_tuples[i].node);
+		printf("[clEnqueueFillBuffer interposed] mem_distr->mem_tuples[%d].node %s\n", i, mem_distr->mem_tuples[i].node);
 	
-		printf("[clEnqueueWriteBuffer interposed] mem_distr->mem_tuples[%d].clhandle %p\n", i, mem_distr->mem_tuples[i].clhandle);
+		printf("[clEnqueueFillBuffer interposed] mem_distr->mem_tuples[%d].clhandle %p\n", i, mem_distr->mem_tuples[i].clhandle);
 		 #endif
 		if(mem_node != command_queue_node){
 			continue;
@@ -1795,7 +1795,7 @@ cl_int clEnqueueFillBuffer (	cl_command_queue  command_queue ,
 
 	cl_mem mem_clhandle = mem_distr->mem_tuples[node_match_index].clhandle;
 	#ifdef DEBUG
-	printf("[clEnqueueWriteBuffer interposed] mem_clhandle %p\n", mem_clhandle);
+	printf("[clEnqueueFillBuffer interposed] mem_clhandle %p\n", mem_clhandle);
 
 	 #endif
 
@@ -1838,7 +1838,7 @@ cl_int clEnqueueFillBuffer (	cl_command_queue  command_queue ,
 	zmq_close (requester);
     	zmq_ctx_destroy (context);
 	#ifdef DEBUG
-	printf("[clEnqueueWriteBuffer interposed] err returned %d\n", ret_pkt.err);
+	printf("[clEnqueueFillBuffer interposed] err returned %d\n", ret_pkt.err);
 	 #endif
 
 	err = ret_pkt.err;
