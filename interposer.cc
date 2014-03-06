@@ -1598,6 +1598,7 @@ cl_sampler clCreateSampler (	cl_context context,
 	create_sub_buffer_ arg_pkt, ret_pkt;
 	arg_pkt.buffer = mem;
 	arg_pkt.flags = flags;
+	arg_pkt.buffer_create_info = * (cl_buffer_region*) cl_buffer_region;
 	arg_pkt.data.buff_ptr = "\0";
 	arg_pkt.data.buff_len = sizeof(char);
 	
@@ -1621,6 +1622,7 @@ cl_sampler clCreateSampler (	cl_context context,
 	*buffer_create_info = ret_pkt.buffer_create_info;
 	mem_distr->mem_tuples[0].node = node;
 	mem_distr->mem_tuples[0].clhandle = ret_pkt.buffer;
+	printf("Got back cm_mem %d\n",ret_pkt.buffer);
         cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
 	zmq_close (requester);
     	zmq_ctx_destroy (context); 
