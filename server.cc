@@ -120,7 +120,7 @@ void clGetDeviceInfo_server(get_device_info_ *argp, get_device_info_ *retp){
 	retp->err = CL_SUCCESS;
 	size_t size = 0;
 	char * profile = NULL;
-	printf("clGetDeviceInfo_server device id = %d param name = %d \n",argp->device,argp->param_name);
+	//printf("clGetDeviceInfo_server device id = %d param name = %d \n",argp->device,argp->param_name);
 	if(argp->is_buff_null) {
 		clGetDeviceInfo(argp->device, argp->param_name, NULL, NULL, &size);
 	} else {
@@ -305,7 +305,7 @@ void clCreateProgramWithSource_server(create_program_with_source_ *argp, create_
 
         cl_program program = 0;
 
-        fprintf(stderr,"[clCreateProgramWithSource_server] context %p program %s", argp->context,argp->program_str.buff_ptr);
+        //fprintf(stderr,"[clCreateProgramWithSource_server] context %p program %s", argp->context,argp->program_str.buff_ptr);
 
         program  = clCreateProgramWithSource((cl_context)(argp->context), 1, (const char **)&(argp->program_str.buff_ptr), NULL, &err);
 
@@ -320,7 +320,7 @@ void clCreateProgramWithSource_server(create_program_with_source_ *argp, create_
 
 	retp->program = (unsigned long)program;
 
-        fprintf(stderr,"[clCreateProgramWithSource_server] program created %p\n", retp->program);
+       //fprintf(stderr,"[clCreateProgramWithSource_server] program created %p\n", retp->program);
 
 }
 
@@ -357,7 +357,7 @@ void clBuildProgram_server(build_program_ *argp, build_program_ *retp){
 
 void clCreateSubBuffer_server(create_sub_buffer_ *argp, create_sub_buffer_ *retp){ 
 	
-	fprintf(stderr,"[clCreateSubBuffer_server] mem %p\n", argp->buffer);
+	//fprintf(stderr,"[clCreateSubBuffer_server] mem %p\n", argp->buffer);
 	cl_mem  ret;
 	cl_int err;
 	ret = clCreateSubBuffer(argp->buffer,argp->flags,argp->buffer_create_type, &(argp->buffer_create_info),&err);
@@ -390,9 +390,9 @@ void clCreateKernel_server(create_kernel_ *argp, create_kernel_ *retp){
 
         cl_kernel kernel = 0;
 
-        fprintf(stderr,"[clCreateKernel_server] program %p\n", argp->program);
-        fprintf(stderr,"[clCreateKernel_server] kernel_name %s\n", argp->kernel_name.buff_ptr);
-        fprintf(stderr,"[clCreateKernel_server] kernel_name length %d\n", argp->kernel_name.buff_len);
+        //fprintf(stderr,"[clCreateKernel_server] program %p\n", argp->program);
+        //fprintf(stderr,"[clCreateKernel_server] kernel_name %s\n", argp->kernel_name.buff_ptr);
+        //fprintf(stderr,"[clCreateKernel_server] kernel_name length %d\n", argp->kernel_name.buff_len);
 
 	char *kernel_name = (char *)calloc(argp->kernel_name.buff_len + 1, sizeof(char));
 	for(int i=0; i<argp->kernel_name.buff_len; i++){
@@ -430,14 +430,14 @@ void clSetKernelArg_server(set_kernel_arg_ *argp, set_kernel_arg_ *retp){
 
         cl_kernel kernel = 0;
 
-        fprintf(stderr,"[clSetKernelArg_server] kernel %p\n", argp->kernel);
+       // fprintf(stderr,"[clSetKernelArg_server] kernel %p\n", argp->kernel);
 
 	if(argp->is_null_arg){
 		err  = clSetKernelArg((cl_kernel)(argp->kernel), argp->arg_index, argp->arg_size, NULL);
 	} else if (argp->is_clobj) {
 		if(argp->is_mem){
 			cl_mem mem = (cl_mem)(argp->mem);
-			fprintf(stderr,"[clSetKernelArg_server] mem %p\n", mem);
+			//fprintf(stderr,"[clSetKernelArg_server] mem %p\n", mem);
 			assert(argp->arg_size == sizeof(cl_mem));
 			err = clSetKernelArg((cl_kernel)(argp->kernel), argp->arg_index, sizeof(cl_mem), (void *)&mem);
 		} else if (argp->is_image){
@@ -570,7 +570,7 @@ main() {
 		zmq_msg_init(&message_header);
 		zmq_msg_recv(&message_header, responder, 0);
 		header = (invocation_header *) zmq_msg_data(&message_header);
-		fprintf(stderr,"\ngot %d\n",header->api_id);
+		//fprintf(stderr,"\ngot %d\n",header->api_id);
 		
 		switch(header->api_id) {
 			case GET_PLATFORM_IDS: {
