@@ -2124,7 +2124,7 @@ cl_int clGetKernelWorkGroupInfo (	cl_kernel kernel,
         zmq_msg_init(&reply);
         zmq_msg_init(&reply_buffer);
         invoke_zmq(requester,&header, &message, &message_buffer, &reply,&reply_buffer);
-	ret_pkt = * (get_device_info_*) zmq_msg_data(&reply);
+	ret_pkt = * (get_kernel_workgroup_info_*) zmq_msg_data(&reply);
 	
 	if(param_value_size_ret != NULL) {
 		*param_value_size_ret = ret_pkt.param_value_size;
