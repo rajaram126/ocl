@@ -169,6 +169,7 @@ typedef struct enqueue_write_buffer {
 	unsigned long mem; //Client to Server
 	unsigned long command_queue; //C2S
 	int blocking; //C2S
+	
 	unsigned long size; //C2S
 	unsigned long offset; //C2S
 	buff_ data; //C2S

@@ -1809,7 +1809,7 @@ cl_int clEnqueueFillBuffer (	cl_command_queue  command_queue ,
 	arg_pkt.offset = offset;
 
 	arg_pkt.data.buff_ptr = (char *)pattern;
-	arg_pkt.data.buff_len = size;
+	arg_pkt.data.buff_len = pattern_size;
 
 	ret_pkt.data.buff_ptr = NULL;
 	//
