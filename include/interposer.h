@@ -33,6 +33,7 @@ typedef struct create_sub_buffer_t {
 	int err;
 	cl_mem buffer;
 	cl_mem_flags flags;
+	cl_buffer_create_type buffer_create_type;
 	cl_buffer_region buffer_create_info;
 	buff_ data; 
 }create_sub_buffer_;

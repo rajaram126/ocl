@@ -1599,6 +1599,7 @@ cl_sampler clCreateSampler (	cl_context context,
 	arg_pkt.buffer = mem;
 	arg_pkt.flags = flags;
 	arg_pkt.buffer_create_info = * (cl_buffer_region*)buffer_create_info;
+	arg_pkt.buffer_create_type = buffer_create_type;
 	arg_pkt.data.buff_ptr = "\0";
 	arg_pkt.data.buff_len = sizeof(char);
 	

@@ -307,9 +307,9 @@ void clBuildProgram_server(build_program_ *argp, build_program_ *retp){
 
 	cl_int err = CL_SUCCESS;
 
-        fprintf(stderr,"[clBuildProgram_server] program %p\n", argp->program);
-	fprintf(stderr,"[clBuildProgram_server] options %s\n", argp->options.buff_ptr);
-	 fprintf(stderr,"[clBuildProgram_server] options length %d\n", argp->options.buff_len);
+      //  fprintf(stderr,"[clBuildProgram_server] program %p\n", argp->program);
+	//fprintf(stderr,"[clBuildProgram_server] options %s\n", argp->options.buff_ptr);
+	// fprintf(stderr,"[clBuildProgram_server] options length %d\n", argp->options.buff_len);
 	if(!argp->options.buff_len) {
 	argp->options.buff_ptr = "";
 	}
@@ -330,6 +330,20 @@ void clBuildProgram_server(build_program_ *argp, build_program_ *retp){
 
 	retp->options.buff_ptr = "\0";
 	retp->options.buff_len = sizeof(char);	
+
+}
+
+void clCreateSubBuffer_server(create_sub_buffer_ *argp, create_sub_buffer_ *retp){ 
+	
+	fprintf(stderr,"[clCreateSubBuffer_server] mem %p\n", argp->buffer);
+	cl_mem  ret;
+	cl_int err;
+	ret = clCreateSubBuffer(argp->buffer,argp->flags,argp->buffer_create_type, &(argp->buffer_create_info),&err);
+	retp->err = err;
+	retp->buffer = ret;
+	retp->data.buff_ptr = "\0";
+	retp->data.buff_len = sizeof(char);
+
 
 }
 
