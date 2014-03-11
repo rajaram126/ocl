@@ -109,10 +109,6 @@ int i;
 		retp->param_value.buff_ptr = *binaries;
 		retp->param_value.buff_len = argp->param_value_size;
 		retp->param_value_size = argp->param_value_size;
-		for ( i=0;i<(int)argp->param_value_size;++i) {
-    			delete[] binaries[i];
-		}
-		
 	} else
 	 {
 		retp->param_value.buff_ptr = "\0";
@@ -759,6 +755,11 @@ main() {
 						zmq_msg_close(&message);
 						zmq_msg_close(&message_buffer);
 						zmq_msg_close(&reply);
+						retp->param_value.buff_len;
+						int i;
+						for ( i=0;i<(int)&arg_pkt->param_value_size;++i) {
+    							delete[] ret_pkt.param_value.buff_ptr[i];
+						}
 						break;
 						}
 			case GET_DEVICE_IDS : {
