@@ -10,6 +10,8 @@
 #include <unistd.h>
 #include "interposer.h"
 
+#define DEBUG 1
+
 void clGetPlatformIDs_server(get_platform_ids_ *argp, get_platform_ids_ *retp){
 
 	cl_int err = CL_SUCCESS;
@@ -106,7 +108,7 @@ int i;
 		retp->param_value.buff_len = argp->param_value_size;
 		retp->param_value_size = argp->param_value_size;
 	} else if(binaries) {
-		retp->param_value.buff_ptr = *binaries;
+		retp->param_value.buff_ptr = (char *) binaries;
 		retp->param_value.buff_len = argp->param_value_size;
 		retp->param_value_size = argp->param_value_size;
 	} else
@@ -582,7 +584,7 @@ main() {
     void *responder = zmq_socket (context, ZMQ_REP);
 
 //TODO cleanup
-    int rc = zmq_bind (responder, "tcp://127.0.0.1:5555");
+    int rc = zmq_bind (responder, "tcp://10.0.0.5:5555");
     assert (rc == 0);
 
 	while (1) {
@@ -756,8 +758,10 @@ main() {
 						zmq_msg_close(&message_buffer);
 						zmq_msg_close(&reply);
 						int i;
+						if(arg_pkt.param_name == 4454) {
 						for ( i=0;i<(int)(&arg_pkt)->param_value_size;++i) {
-    							delete[] (char **) ret_pkt.param_value.buff_ptr[i];
+    							delete[] ((char **) ret_pkt.param_value.buff_ptr)[i];
+						}
 						}
 						break;
 						}
