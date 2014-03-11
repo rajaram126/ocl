@@ -755,7 +755,6 @@ main() {
 						zmq_msg_close(&message);
 						zmq_msg_close(&message_buffer);
 						zmq_msg_close(&reply);
-						retp->param_value.buff_len;
 						int i;
 						for ( i=0;i<(int)&arg_pkt->param_value_size;++i) {
     							delete[] ret_pkt.param_value.buff_ptr[i];
