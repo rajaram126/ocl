@@ -616,6 +616,7 @@ main() {
 						zmq_msg_close(&message);
 						zmq_msg_close(&message_buffer);
 						zmq_msg_close(&reply);
+						zmq_msg_close(&reply_buffer);
 						break;
 						}
 			case CREATE_SUB_BUFFER: {
@@ -638,6 +639,7 @@ main() {
 						zmq_msg_close(&message);
 						zmq_msg_close(&message_buffer);
 						zmq_msg_close(&reply);
+						zmq_msg_close(&reply_buffer);						
 						break;
 						}
 			case CL_FLUSH:		{
@@ -659,7 +661,7 @@ main() {
 						zmq_msg_send(&reply_buffer, responder, 0);
 						zmq_msg_close(&message);
 						zmq_msg_close(&message_buffer);
-						zmq_msg_close(&reply);
+						zmq_msg_close(&reply);zmq_msg_close(&reply_buffer);
 						break;
 						}
 						
@@ -684,7 +686,7 @@ main() {
 						zmq_msg_send(&reply_buffer, responder, 0);
 						zmq_msg_close(&message);
 						zmq_msg_close(&message_buffer);
-						zmq_msg_close(&reply);
+						zmq_msg_close(&reply);zmq_msg_close(&reply_buffer);
 						break;
 						}
 			case GET_DEVICE_INFO: {
@@ -708,7 +710,7 @@ main() {
 						zmq_msg_send(&reply_buffer, responder, 0);
 						zmq_msg_close(&message);
 						zmq_msg_close(&message_buffer);
-						zmq_msg_close(&reply);
+						zmq_msg_close(&reply);zmq_msg_close(&reply_buffer);
 						break;
 						}
 			case GET_KERNEL_WORKGROUP_INFO: {
@@ -732,7 +734,7 @@ main() {
 						zmq_msg_send(&reply_buffer, responder, 0);
 						zmq_msg_close(&message);
 						zmq_msg_close(&message_buffer);
-						zmq_msg_close(&reply);
+						zmq_msg_close(&reply);zmq_msg_close(&reply_buffer);
 						break;
 						}
 			case GET_PROGRAM_INFO: {
@@ -763,6 +765,7 @@ main() {
     							delete[] ((char **) ret_pkt.param_value.buff_ptr)[i];
 						}
 						}
+						zmq_msg_close(&reply_buffer);
 						break;
 						}
 			case GET_DEVICE_IDS : {
@@ -783,7 +786,7 @@ main() {
 						zmq_msg_send(&reply_buffer, responder, 0);
 						zmq_msg_close(&message);
 						zmq_msg_close(&message_buffer);
-						zmq_msg_close(&reply);
+						zmq_msg_close(&reply);zmq_msg_close(&reply_buffer);
 						break;
 						}
 			case CREATE_CONTEXT : {
@@ -804,7 +807,7 @@ main() {
 						zmq_msg_send(&reply_buffer, responder, 0);
 						zmq_msg_close(&message);
 						zmq_msg_close(&message_buffer);
-						zmq_msg_close(&reply);
+						zmq_msg_close(&reply);zmq_msg_close(&reply_buffer);
 						break;
 						}
 			case CREATE_COMMAND_QUEUE: {
@@ -825,7 +828,7 @@ main() {
 							zmq_msg_send(&reply_buffer, responder, 0);
 							zmq_msg_close(&message);
 							zmq_msg_close(&message_buffer);
-							zmq_msg_close(&reply);
+							zmq_msg_close(&reply);zmq_msg_close(&reply_buffer);
 							break;
 						}
 			case CREATE_BUFFER: {
@@ -846,7 +849,7 @@ main() {
 							zmq_msg_send(&reply_buffer, responder, 0);
 							zmq_msg_close(&message);
 							zmq_msg_close(&message_buffer);
-							zmq_msg_close(&reply);
+							zmq_msg_close(&reply);zmq_msg_close(&reply_buffer);
 							break;
 						}
 			case CREATE_PROGRAM_WITH_SOURCE: {
@@ -867,7 +870,7 @@ main() {
 							zmq_msg_send(&reply_buffer, responder, 0);
 							zmq_msg_close(&message);
 							zmq_msg_close(&message_buffer);
-							zmq_msg_close(&reply);
+							zmq_msg_close(&reply);zmq_msg_close(&reply_buffer);
 							break;
 						}
 			case BUILD_PROGRAM: 
@@ -892,7 +895,7 @@ main() {
 							zmq_msg_send(&reply_buffer, responder, 0);
 							zmq_msg_close(&message);
 							zmq_msg_close(&message_buffer);
-							zmq_msg_close(&reply);
+							zmq_msg_close(&reply);zmq_msg_close(&reply_buffer);
 							break;
 						}
 			case CREATE_KERNEL: 		{
@@ -913,7 +916,7 @@ main() {
 							zmq_msg_send(&reply_buffer, responder, 0);
 							zmq_msg_close(&message);
 							zmq_msg_close(&message_buffer);
-							zmq_msg_close(&reply);
+							zmq_msg_close(&reply);zmq_msg_close(&reply_buffer);
 							break;
 						}
 			case SET_KERNEL_ARG:  		{
@@ -934,7 +937,7 @@ main() {
 							zmq_msg_send(&reply_buffer, responder, 0);
 							zmq_msg_close(&message);
 							zmq_msg_close(&message_buffer);
-							zmq_msg_close(&reply);
+							zmq_msg_close(&reply);zmq_msg_close(&reply_buffer);
 							break;
 						}
 			case ENQUEUE_WRITE_BUFFER: 	{
@@ -955,7 +958,7 @@ main() {
 							zmq_msg_send(&reply_buffer, responder, 0);
 							zmq_msg_close(&message);
 							zmq_msg_close(&message_buffer);
-							zmq_msg_close(&reply);
+							zmq_msg_close(&reply);zmq_msg_close(&reply_buffer);
 							break;
 						}
 			case ENQUEUE_FILL_BUFFER: 	{
@@ -976,7 +979,7 @@ main() {
 							zmq_msg_send(&reply_buffer, responder, 0);
 							zmq_msg_close(&message);
 							zmq_msg_close(&message_buffer);
-							zmq_msg_close(&reply);
+							zmq_msg_close(&reply);zmq_msg_close(&reply_buffer);
 							break;
 						}
 			case ENQUEUE_READ_BUFFER:	{
@@ -997,7 +1000,7 @@ main() {
 							zmq_msg_send(&reply_buffer, responder, 0);
 							zmq_msg_close(&message);
 							zmq_msg_close(&message_buffer);
-							zmq_msg_close(&reply);
+							zmq_msg_close(&reply);zmq_msg_close(&reply_buffer);
 							break;
 						}
 			case ENQUEUE_NDRANGE_KERNEL:	{
@@ -1024,7 +1027,7 @@ main() {
 							zmq_msg_send(&reply_buffer, responder, 0);
 							zmq_msg_close(&message);
 							zmq_msg_close(&message_buffer);
-							zmq_msg_close(&reply);
+							zmq_msg_close(&reply);zmq_msg_close(&reply_buffer);
 							break;
 						}
 		}
