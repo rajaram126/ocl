@@ -92,7 +92,6 @@ int i;
 		if(argp->param_name == 4454) {
 		//fprintf(stderr,"clGetProgramInfo second case\n");
 		binaries = new  char*[argp->param_value_size];
-		set = 1;
 		for ( i=0;i<(int)argp->param_value_size;++i) {
     			binaries[i] = new  char[50000000];
 		}
