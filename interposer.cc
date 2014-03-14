@@ -10,35 +10,55 @@
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <linux/time.h>
 #include "interposer.h"
 
 // move to config file
 char protocol[] = "tcp";
 char  port[] = "5555";
 char *nodes[] = {"10.0.0.5"};
+int avg_time = 0;
+int count =1;
 
 
 int connect_zmq(char * node, void * requester) {
+	struct timeval cur;
 	char conn_str[50];
 	sprintf(conn_str,"%s://%s:%s",protocol,node,port);
 	return zmq_connect (requester, conn_str);
 }
 
 void invoke_zmq(void * requester, zmq_msg_t * header, zmq_msg_t* message, zmq_msg_t* send_buffer, zmq_msg_t * reply, zmq_msg_t * reply_buffer){
+	int begin,end;
+        do_gettimeofday(&cur);
+        begin = cur.tv_usec;
 	zmq_msg_send(header, requester, ZMQ_SNDMORE);
 	zmq_msg_send(message, requester, ZMQ_SNDMORE);
 	zmq_msg_send(send_buffer, requester, 0);
 	zmq_msg_recv(reply, requester, 0);
 	zmq_msg_recv(reply_buffer, requester, 0);
+	do_gettimeofday(&cur);
+        end = cur.tv_usec;
+	avg_time = avg_time + (end - begin);
+	avg_time = avg_time/count++;
+	printf("Time spent: %d \n",avg_time);
 }
 
 void invoke_zmq(void * requester, zmq_msg_t * header, zmq_msg_t* message, zmq_msg_t* send_buffer,zmq_msg_t* send_next_buffer, zmq_msg_t * reply, zmq_msg_t * reply_buffer){
+	int begin,end;
+        do_gettimeofday(&cur);
+        begin = cur.tv_usec;
 	zmq_msg_send(header, requester, ZMQ_SNDMORE);
 	zmq_msg_send(message, requester, ZMQ_SNDMORE);
 	zmq_msg_send(send_buffer, requester, ZMQ_SNDMORE);
 	zmq_msg_send(send_next_buffer, requester, 0);
 	zmq_msg_recv(reply, requester, 0);
 	zmq_msg_recv(reply_buffer, requester, 0);
+	do_gettimeofday(&cur);
+        end = cur.tv_usec;
+        avg_time = avg_time + (end - begin);
+        avg_time = avg_time/count++;
+        printf("Time spent: %d \n",avg_time);
 }
 
 
