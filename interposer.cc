@@ -17,8 +17,8 @@
 char protocol[] = "tcp";
 char  port[] = "5555";
 char *nodes[] = {"10.0.0.5"};
-int avg_time = 0;
-int count =1;
+static int avg_time = 0;
+static int count =1;
 
 
 int connect_zmq(char * node, void * requester) {
