@@ -4,7 +4,7 @@ build_all: build_server build_client
 
 
 build_server:
-	g++ -ggdb -I /opt/AMDAPP/include -I ./include -o server server.cc -L/usr/lib64 -L/usr/local/lib -lOpenCL -lzmq
+	g++ -ggdb -I /opt/AMDAPP/include -I ./include -o server server.cc -L/usr/lib64 -L/usr/local/lib -lOpenCL -lzmq -lGPUPerfAPICL
 
 
 build_client:

@@ -9,9 +9,223 @@
 #include <stdio.h>
 #include <unistd.h>
 #include "interposer.h"
-
+#include "GPUPerfAPI.h"
+#include<iostream>
 #define DEBUG 1
 
+using namespace std;
+extern const char *__progname;
+char * prg = "__kernel void helloworld(__global char* in, __global char* out)\
+{\
+        int num = get_global_id(0);\
+        out[num] = in[num] + 1;\
+}";
+
+
+float WriteSession( gpa_uint32 currentWaitSessionID)
+{
+        static bool doneHeadings = false;
+        gpa_uint32 count;
+	float result = 0;
+        GPA_GetEnabledCount( &count );
+        if ( !doneHeadings )
+        {
+                const char* name;
+                for ( gpa_uint32 counter = 0 ; counter < count ; counter++ )
+                {
+                        gpa_uint32 enabledCounterIndex;
+                        GPA_GetEnabledIndex( counter, &enabledCounterIndex );
+                        GPA_GetCounterName( enabledCounterIndex, &name );
+                }
+                doneHeadings = true;
+        }
+        gpa_uint32 sampleCount = 1;
+        for ( gpa_uint32 sample = 0 ; sample < sampleCount ; sample++ )
+        {
+for ( gpa_uint32 counter = 0 ; counter < count ; counter++ )
+                {
+                        gpa_uint32 enabledCounterIndex;
+                        GPA_GetEnabledIndex( counter, &enabledCounterIndex );
+                        GPA_Type type;
+                        GPA_GetCounterDataType( enabledCounterIndex, &type );
+                        if ( type == GPA_TYPE_UINT32)
+                        {
+                                gpa_uint32 value;
+                                GPA_GetSampleUInt32( currentWaitSessionID,
+                                                sample, enabledCounterIndex, &value );
+                                //fprintf( f, "%u,", value );
+				result+= (float) value;
+                        }
+                        else if ( type == GPA_TYPE_UINT64 )
+                        {
+                                gpa_uint64 value;
+                                GPA_GetSampleUInt64( currentWaitSessionID,
+                                                sample, enabledCounterIndex, &value );
+                                //fprintf( f, "%I64u,", value );
+				result+= (float) value;
+                        }
+                        else if ( type == GPA_TYPE_FLOAT32 )
+                        {
+                                gpa_float32 value;
+                                GPA_GetSampleFloat32( currentWaitSessionID,
+                                                sample, enabledCounterIndex, &value );
+                                //fprintf( f, "%f,", value );
+                                result+= (float) value;
+                        }
+                        else if ( type == GPA_TYPE_FLOAT64 )
+                        {
+                                gpa_float64 value;
+                                GPA_GetSampleFloat64( currentWaitSessionID,
+                                                sample, enabledCounterIndex, &value );
+                                //fprintf( f, "%f,", value );
+				result+= (float) value;
+                        }
+                        else
+                        {
+                                assert(false);
+                        }
+                }
+        }
+	return result;
+}
+
+
+float perf() {
+	float result;
+        /*Step1: Getting platforms and choose an available one.*/
+        cl_uint numPlatforms;   //the NO. of platforms
+        cl_platform_id platform = NULL; //the chosen platform
+        cl_int  status = clGetPlatformIDs(0, NULL, &numPlatforms);
+        if (status != CL_SUCCESS)
+        {
+                cout << "Error: Getting platforms!" << endl;
+                return -1;
+        }
+
+        /*For clarity, choose the first available platform. */
+        if(numPlatforms > 0)
+        {
+                cl_platform_id* platforms = (cl_platform_id* )malloc(numPlatforms* sizeof(cl_platform_id));
+                status = clGetPlatformIDs(numPlatforms, platforms, NULL);
+                platform = platforms[0];
+                free(platforms);
+        }
+
+        /*Step 2:Query the platform and choose the first GPU device if has one.Otherwise use the CPU as device.*/
+        cl_uint                         numDevices = 0;
+        cl_device_id        *devices;
+        status = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 0, NULL, &numDevices);
+        if (numDevices == 0)    //no GPU available.
+        {
+                cout << "No GPU device available." << endl;
+                cout << "Choose CPU as default device." << endl;
+                status = clGetDeviceIDs(platform, CL_DEVICE_TYPE_CPU, 0, NULL, &numDevices);
+                devices = (cl_device_id*)malloc(numDevices * sizeof(cl_device_id));
+                status = clGetDeviceIDs(platform, CL_DEVICE_TYPE_CPU, numDevices, devices, NULL);
+        }
+        else
+        {
+                devices = (cl_device_id*)malloc(numDevices * sizeof(cl_device_id));
+                status = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, numDevices, devices, NULL);
+        }
+
+
+        /*Step 3: Create context.*/
+        cl_context context = clCreateContext(NULL,1, devices,NULL,NULL,NULL);
+
+        /*Step 4: Creating command queue associate with the context.*/
+        cl_command_queue commandQueue = clCreateCommandQueue(context, devices[0], 0, NULL);
+        GPA_Initialize();
+        GPA_OpenContext( commandQueue );
+        GPA_EnableAllCounters();
+/*Step 5: Create program object */
+        const char *source = prg;
+        cout << source << endl;
+        size_t sourceSize[] = {strlen(source)};
+        cl_program program = clCreateProgramWithSource(context, 1, &source, sourceSize, NULL);
+
+        /*Step 6: Build program. */
+        status=clBuildProgram(program, 1,devices,NULL,NULL,NULL);
+
+        /*Step 7: Initial input,output for the host and create memory objects for the kernel*/
+        const char* input = "GdkknVnqkc";
+        size_t strlength = strlen(input);
+        char *output = (char*) malloc(strlength + 1);
+
+        cl_mem inputBuffer = clCreateBuffer(context, CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR, (strlength + 1) * sizeof(char),(void *) input, NULL);
+        cl_mem outputBuffer = clCreateBuffer(context, CL_MEM_WRITE_ONLY , (strlength + 1) * sizeof(char), NULL, NULL);
+
+        /*Step 8: Create kernel object */
+        cl_kernel kernel = clCreateKernel(program,"helloworld", NULL);
+
+        /*Step 9: Sets Kernel arguments.*/
+        status = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&inputBuffer);
+        status = clSetKernelArg(kernel, 1, sizeof(cl_mem), (void *)&outputBuffer);
+
+       /*Step 10: Running the kernel.*/
+        size_t global_work_size[1] = {strlength};
+        static gpa_uint32 currentWaitSessionID = 1;
+                gpa_uint32 sessionID;
+                GPA_BeginSession( &sessionID );
+                gpa_uint32 numRequiredPasses = 1;
+
+
+                GPA_GetPassCount( &numRequiredPasses );
+                for ( gpa_uint32 i = 0; i < numRequiredPasses; i++ )
+                {
+                        GPA_BeginPass();
+                        GPA_BeginSample( 0 );
+        status = clEnqueueNDRangeKernel(commandQueue, kernel, 1, NULL, global_work_size, NULL, 0, NULL, NULL);
+        clFinish(commandQueue);
+        clFlush(commandQueue);
+        GPA_EndSample();
+        GPA_EndPass();
+        }
+                GPA_EndSession();
+        bool readyResult = true;
+                if ( sessionID != currentWaitSessionID )
+                {
+                        GPA_Status sessionStatus;
+                        sessionStatus = GPA_IsSessionReady( &readyResult,
+                                        currentWaitSessionID );
+                        while ( sessionStatus == GPA_STATUS_ERROR_SESSION_NOT_FOUND )
+                        {
+                                currentWaitSessionID++;
+                                sessionStatus = GPA_IsSessionReady( &readyResult,
+                                                currentWaitSessionID );
+                        }
+                }
+        if ( readyResult )
+                {
+                         result = WriteSession( currentWaitSessionID );
+                }
+        GPA_CloseContext();
+
+        /*Step 11: Read the cout put back to host memory.*/
+        status = clEnqueueReadBuffer(commandQueue, outputBuffer, CL_TRUE, 0, strlength * sizeof(char), output, 0, NULL, NULL);
+
+        output[strlength] = '\0';       //Add the terminal character to the end of output.
+	/*Step 12: Clean the resources.*/
+        status = clReleaseKernel(kernel);                               //Release kernel.
+        status = clReleaseProgram(program);                             //Release the program object.
+        status = clReleaseMemObject(inputBuffer);               //Release mem object.
+        status = clReleaseMemObject(outputBuffer);
+        status = clReleaseCommandQueue(commandQueue);   //Release  Command queue.
+        status = clReleaseContext(context);                             //Release context.
+
+        if (output != NULL)
+        {
+                free(output);
+                output = NULL;
+        }
+
+        if (devices != NULL)
+        {
+                free(devices);
+                devices = NULL;
+        }
+        return result;
+}
 void clGetPlatformIDs_server(get_platform_ids_ *argp, get_platform_ids_ *retp){
 
 	cl_int err = CL_SUCCESS;
