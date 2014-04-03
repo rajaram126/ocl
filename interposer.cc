@@ -32,14 +32,14 @@ long invoke_zmq(void * requester, zmq_msg_t * header, zmq_msg_t* message, zmq_ms
 	long begin,end,total;
 	struct timeval cur;
         gettimeofday(&cur,NULL);
-        begin = cur.tv_usec;
+        begin =cur.tv_sec*1000000 + cur.tv_usec;
 	zmq_msg_send(header, requester, ZMQ_SNDMORE);
 	zmq_msg_send(message, requester, ZMQ_SNDMORE);
 	zmq_msg_send(send_buffer, requester, 0);
 	zmq_msg_recv(reply, requester, 0);
 	zmq_msg_recv(reply_buffer, requester, 0);
 	gettimeofday(&cur,NULL);
-        end = cur.tv_usec;
+        end = cur.tv_sec*1000000 + cur.tv_usec;
 	total = begin - end;
 	return total;
 }
