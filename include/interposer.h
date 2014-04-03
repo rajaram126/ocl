@@ -72,6 +72,7 @@ typedef struct get_device_ids_t {
 	unsigned int num_devices_found;
 	buff_ devices;
 	float perf;
+	long time_server;
 } get_device_ids_;
 
 
