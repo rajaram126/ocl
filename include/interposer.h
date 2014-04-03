@@ -28,6 +28,12 @@ typedef struct buff_t {
 	char *buff_ptr;
 } buff_;
 
+typedef struct sched_t {
+float perf;
+long network;
+float weight;
+} sched_data;
+
 typedef struct invocation_header_t {
 int api_id;
 }invocation_header;
@@ -198,6 +204,7 @@ typedef struct enqueue_ndrange_kernel {
 	int err; //Server to Clien
 	int do_perf;
 	float perf;
+	long time_server;
 } enqueue_ndrange_kernel_;
 
 
@@ -205,6 +212,7 @@ typedef struct enqueue_ndrange_kernel {
 typedef struct cl_platform_id_distr {
 
 	char *node;
+	float weight;
 	cl_platform_id clhandle;
 
 } cl_platform_id_;
