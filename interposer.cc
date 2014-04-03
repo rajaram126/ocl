@@ -1452,7 +1452,7 @@ perf_count++;
 		arg_pkt.local_size.buff_ptr = "\0";
 		arg_pkt.local_size.buff_len = sizeof(char);
 	}
-	if( perf_count == 1 || perf_count % 250 == 0){
+	if( perf_count == 1 || perf_count % 10000 == 0){
 	 arg_pkt.do_perf = 1;
 	} else {
 	arg_pkt.do_perf = 0;
