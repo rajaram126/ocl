@@ -40,7 +40,7 @@ long invoke_zmq(void * requester, zmq_msg_t * header, zmq_msg_t* message, zmq_ms
 	zmq_msg_recv(reply_buffer, requester, 0);
 	gettimeofday(&cur,NULL);
         end = cur.tv_sec*1000000 + cur.tv_usec;
-	total = begin - end;
+	total = end - begin;
 	return total;
 }
 
