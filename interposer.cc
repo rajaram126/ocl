@@ -28,8 +28,8 @@ int connect_zmq(char * node, void * requester) {
 	return zmq_connect (requester, conn_str);
 }
 
-void invoke_zmq(void * requester, zmq_msg_t * header, zmq_msg_t* message, zmq_msg_t* send_buffer, zmq_msg_t * reply, zmq_msg_t * reply_buffer){
-	int begin,end;
+long invoke_zmq(void * requester, zmq_msg_t * header, zmq_msg_t* message, zmq_msg_t* send_buffer, zmq_msg_t * reply, zmq_msg_t * reply_buffer){
+	long begin,end,total;
 	struct timeval cur;
         gettimeofday(&cur,NULL);
         begin = cur.tv_usec;
@@ -40,8 +40,8 @@ void invoke_zmq(void * requester, zmq_msg_t * header, zmq_msg_t* message, zmq_ms
 	zmq_msg_recv(reply_buffer, requester, 0);
 	gettimeofday(&cur,NULL);
         end = cur.tv_usec;
-	avg_time = avg_time + (end - begin);
-	avg_time = avg_time/count++;
+	total = begin - end;
+	return total;
 }
 
 void invoke_zmq(void * requester, zmq_msg_t * header, zmq_msg_t* message, zmq_msg_t* send_buffer,zmq_msg_t* send_next_buffer, zmq_msg_t * reply, zmq_msg_t * reply_buffer){
@@ -217,6 +217,7 @@ cl_int clGetDeviceIDs (cl_platform_id platform,cl_device_type device_type, cl_ui
 	cl_platform_id_ *platform_distr = (cl_platform_id_ *)platform;
 
 	char *node = platform_distr->node;
+	long total_time;
 	cl_platform_id clhandle = platform_distr->clhandle;
 
 	get_device_ids_ arg_pkt, ret_pkt;
@@ -245,9 +246,10 @@ cl_int clGetDeviceIDs (cl_platform_id platform,cl_device_type device_type, cl_ui
         memcpy(zmq_msg_data(&message_buffer), arg_pkt.devices.buff_ptr, sizeof(char));
         zmq_msg_init(&reply);
         zmq_msg_init(&reply_buffer);
-        invoke_zmq(requester,&header, &message, &message_buffer, &reply,&reply_buffer);
+        total_time = invoke_zmq(requester,&header, &message, &message_buffer, &reply,&reply_buffer);
 
         ret_pkt = * (get_device_ids_*) zmq_msg_data(&reply);
+	printf("Server time: %ld\n",total_time - ret_pkt.time_server);
         //Todo free
         ret_pkt.devices.buff_ptr = (char *) malloc(ret_pkt.devices.buff_len);
         memcpy(ret_pkt.devices.buff_ptr, zmq_msg_data(&reply_buffer), ret_pkt.devices.buff_len);
