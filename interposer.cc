@@ -17,9 +17,11 @@
 char protocol[] = "tcp";
 char  port[] = "5555";
 char *nodes[] = {"10.0.0.5"};
+int weights[] = {1};
 static int avg_time = 0;
 static int count =1;
 int perf_count = 0;
+extern const char *__progname;
 
 int connect_zmq(char * node, void * requester) {
 	struct timeval cur;
@@ -44,11 +46,11 @@ long invoke_zmq(void * requester, zmq_msg_t * header, zmq_msg_t* message, zmq_ms
 	return total;
 }
 
-void invoke_zmq(void * requester, zmq_msg_t * header, zmq_msg_t* message, zmq_msg_t* send_buffer,zmq_msg_t* send_next_buffer, zmq_msg_t * reply, zmq_msg_t * reply_buffer){
+long invoke_zmq(void * requester, zmq_msg_t * header, zmq_msg_t* message, zmq_msg_t* send_buffer,zmq_msg_t* send_next_buffer, zmq_msg_t * reply, zmq_msg_t * reply_buffer){
 	int begin,end;
 	struct timeval cur;
         gettimeofday(&cur,NULL);
-        begin = cur.tv_usec;
+	begin =cur.tv_sec*1000000 + cur.tv_usec;
 	zmq_msg_send(header, requester, ZMQ_SNDMORE);
 	zmq_msg_send(message, requester, ZMQ_SNDMORE);
 	zmq_msg_send(send_buffer, requester, ZMQ_SNDMORE);
@@ -56,13 +58,16 @@ void invoke_zmq(void * requester, zmq_msg_t * header, zmq_msg_t* message, zmq_ms
 	zmq_msg_recv(reply, requester, 0);
 	zmq_msg_recv(reply_buffer, requester, 0);
 	gettimeofday(&cur,NULL);
-        end = cur.tv_usec;
-        avg_time = avg_time + (end - begin);
-        avg_time = avg_time/count++;
+        end = cur.tv_sec*1000000 + cur.tv_usec;
+	return (end - begin);
 }
 
 
-void invoke_zmq(void * requester, zmq_msg_t * header, zmq_msg_t* message, zmq_msg_t* send_buffer,zmq_msg_t* send_aux_buffer_1,zmq_msg_t* send_aux_buffer_2, zmq_msg_t * reply, zmq_msg_t * reply_buffer){
+long invoke_zmq(void * requester, zmq_msg_t * header, zmq_msg_t* message, zmq_msg_t* send_buffer,zmq_msg_t* send_aux_buffer_1,zmq_msg_t* send_aux_buffer_2, zmq_msg_t * reply, zmq_msg_t * reply_buffer){
+	int begin,end;
+        struct timeval cur;
+        gettimeofday(&cur,NULL);
+        begin =cur.tv_sec*1000000 + cur.tv_usec;
 	zmq_msg_send(header, requester, ZMQ_SNDMORE);
 	zmq_msg_send(message, requester, ZMQ_SNDMORE);
 	zmq_msg_send(send_buffer, requester, ZMQ_SNDMORE);
@@ -70,6 +75,9 @@ void invoke_zmq(void * requester, zmq_msg_t * header, zmq_msg_t* message, zmq_ms
 	zmq_msg_send(send_aux_buffer_2, requester, 0);
 	zmq_msg_recv(reply, requester, 0);
 	zmq_msg_recv(reply_buffer, requester, 0);
+	gettimeofday(&cur,NULL);
+        end = cur.tv_sec*1000000 + cur.tv_usec;
+        return (end - begin);
 }
 
 void cleanup_messages(zmq_msg_t * header, zmq_msg_t* message, zmq_msg_t* send_buffer, zmq_msg_t * reply, zmq_msg_t * reply_buffer) {
@@ -184,6 +192,7 @@ cl_int clGetPlatformIDs (cl_uint num_entries, cl_platform_id *platforms, cl_uint
 		for(int j=0; j<num_entries_needed; j++){
 			cl_platform_id_ *platform_distr = (cl_platform_id_ *)malloc(sizeof(cl_platform_id_));
 			platform_distr->node = nodes[i];
+			platform_distr->weight = weights[i];
 			platform_distr->clhandle = platforms_curr_node[j];
 			#ifdef DEBUG
 			printf("[clGetPlatformIDs interposed] platforms[%d] = %p\n", num_entries_found + j, platform_distr->clhandle);
@@ -209,7 +218,18 @@ cl_int clGetDeviceIDs (cl_platform_id platform,cl_device_type device_type, cl_ui
 	if(!num_devices && !devices){
 		return CL_INVALID_VALUE;
 	}
-
+	FILE *ifp= NULL;
+	int found = 0;
+	char *mode = "rb";
+	char file_name[25];
+	sprintf(file_name,"%s.sched",__progname);
+	ifp = fopen(file_name, mode);
+	sched_data data_t;
+	if (ifp != NULL) {
+		found = 1;
+		fread(&data_t, sizeof(data_t), 1, ifp);
+	}
+	
 	int num_devices_found = 0;
 
 	cl_int err = CL_SUCCESS;	
@@ -218,6 +238,8 @@ cl_int clGetDeviceIDs (cl_platform_id platform,cl_device_type device_type, cl_ui
 
 	char *node = platform_distr->node;
 	long total_time;
+	float platform_weight = platform_distr->weight;
+	float dev_perf;
 	cl_platform_id clhandle = platform_distr->clhandle;
 
 	get_device_ids_ arg_pkt, ret_pkt;
@@ -250,7 +272,15 @@ cl_int clGetDeviceIDs (cl_platform_id platform,cl_device_type device_type, cl_ui
 
         ret_pkt = * (get_device_ids_*) zmq_msg_data(&reply);
 	printf("Server time: %ld\n",total_time - ret_pkt.time_server);
+	
         //Todo free
+	dev_perf = ret_pkt.perf;
+	if(found && data_t.weight != platform_weight) {
+	if (data_t.network > (total_time - ret_pkt.time_server) || (data_t.perf*data_t.weight <  platform_weight*dev_perf)) {
+		*num_devices = 0;
+		return CL_SUCCESS;
+	}
+	}
         ret_pkt.devices.buff_ptr = (char *) malloc(ret_pkt.devices.buff_len);
         memcpy(ret_pkt.devices.buff_ptr, zmq_msg_data(&reply_buffer), ret_pkt.devices.buff_len);
 	cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
@@ -1361,7 +1391,7 @@ cl_int clEnqueueNDRangeKernel (cl_command_queue command_queue, cl_kernel kernel,
 
 	cl_int err = CL_SUCCESS;
 	char *kernel_node;
-
+	long total_time;
 	cl_command_queue_ *command_queue_distr = (cl_command_queue_ *)command_queue;
 	char *command_queue_node = command_queue_distr->node;
 	cl_command_queue command_queue_clhandle = command_queue_distr->clhandle;
@@ -1403,7 +1433,7 @@ perf_count++;
 	arg_pkt.command_queue = (unsigned long)command_queue_clhandle;
 
 	arg_pkt.work_dim = work_dim;
-
+	float perf;
 	if(global_work_offset){
 		arg_pkt.global_offset.buff_ptr = (char *)global_work_offset;
 		arg_pkt.global_offset.buff_len = sizeof(size_t) * work_dim;
@@ -1422,7 +1452,7 @@ perf_count++;
 		arg_pkt.local_size.buff_ptr = "\0";
 		arg_pkt.local_size.buff_len = sizeof(char);
 	}
-	if(perf_count % 50 == 0){
+	if( perf_count == 1 || perf_count % 250 == 0){
 	 arg_pkt.do_perf = 1;
 	} else {
 	arg_pkt.do_perf = 0;
@@ -1449,10 +1479,23 @@ perf_count++;
          memcpy(zmq_msg_data(&message_aux_buffer2), arg_pkt.local_size.buff_ptr,arg_pkt.local_size.buff_len);
          zmq_msg_init(&reply);
          zmq_msg_init(&reply_buffer);
-         invoke_zmq(requester,&header, &message, &message_buffer,&message_aux_buffer,&message_aux_buffer2, &reply,&reply_buffer);
+         total_time = invoke_zmq(requester,&header, &message, &message_buffer,&message_aux_buffer,&message_aux_buffer2, &reply,&reply_buffer);
 
          ret_pkt = * (enqueue_ndrange_kernel_ *) zmq_msg_data(&reply);
                         //Todo free
+         if(arg_pkt.do_perf) {
+		char file_name[25];
+		sprintf(file_name,"%s.sched",__progname);
+		FILE* output;
+		sched_data data_t;
+		data_t.perf = ret_pkt.perf;
+		data_t.network = total_time - ret_pkt.time_server;
+		data_t.weight = 1;
+		output = fopen(file_name, "wb");
+		fwrite(&data_t, sizeof(data_t), 1, output);
+
+		fclose(output);
+	}
          ret_pkt.global_offset.buff_ptr = (char *) malloc(ret_pkt.global_offset.buff_len);
          memcpy(ret_pkt.global_offset.buff_ptr, zmq_msg_data(&reply_buffer), ret_pkt.global_offset.buff_len);
          cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
