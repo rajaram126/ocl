@@ -19,7 +19,7 @@ char  port[] = "5555";
 char *nodes[] = {"10.0.0.5"};
 static int avg_time = 0;
 static int count =1;
-
+int perf_count = 0;
 
 int connect_zmq(char * node, void * requester) {
 	struct timeval cur;
@@ -42,7 +42,6 @@ void invoke_zmq(void * requester, zmq_msg_t * header, zmq_msg_t* message, zmq_ms
         end = cur.tv_usec;
 	avg_time = avg_time + (end - begin);
 	avg_time = avg_time/count++;
-	printf("Time spent: %d \n",avg_time);
 }
 
 void invoke_zmq(void * requester, zmq_msg_t * header, zmq_msg_t* message, zmq_msg_t* send_buffer,zmq_msg_t* send_next_buffer, zmq_msg_t * reply, zmq_msg_t * reply_buffer){
@@ -60,7 +59,6 @@ void invoke_zmq(void * requester, zmq_msg_t * header, zmq_msg_t* message, zmq_ms
         end = cur.tv_usec;
         avg_time = avg_time + (end - begin);
         avg_time = avg_time/count++;
-        printf("Time spent: %d \n",avg_time);
 }
 
 
@@ -1396,7 +1394,7 @@ cl_int clEnqueueNDRangeKernel (cl_command_queue command_queue, cl_kernel kernel,
 	 #endif
 
 
-
+perf_count++;
 	enqueue_ndrange_kernel_ arg_pkt, ret_pkt;
 
 	arg_pkt.kernel = (unsigned long)kernel_clhandle;
@@ -1422,7 +1420,11 @@ cl_int clEnqueueNDRangeKernel (cl_command_queue command_queue, cl_kernel kernel,
 		arg_pkt.local_size.buff_ptr = "\0";
 		arg_pkt.local_size.buff_len = sizeof(char);
 	}
-
+	if(perf_count % 50 == 0){
+	 arg_pkt.do_perf = 1;
+	} else {
+	arg_pkt.do_perf = 0;
+	}
 	ret_pkt.global_offset.buff_ptr = NULL;	
 	ret_pkt.global_size.buff_ptr = NULL;	
 	ret_pkt.local_size.buff_ptr = NULL;	
