@@ -71,6 +71,7 @@ typedef struct get_device_ids_t {
 	int err;
 	unsigned int num_devices_found;
 	buff_ devices;
+	float perf;
 } get_device_ids_;
 
 
@@ -193,7 +194,9 @@ typedef struct enqueue_ndrange_kernel {
 	buff_ global_offset; //C2S
 	buff_ global_size; //C2S
 	buff_ local_size; //C2S
-	int err; //Server to Client
+	int err; //Server to Clien
+	int do_perf;
+	float perf;
 } enqueue_ndrange_kernel_;
 
 
