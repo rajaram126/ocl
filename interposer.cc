@@ -16,7 +16,7 @@
 // move to config file
 char protocol[] = "tcp";
 char  port[] = "5555";
-char *nodes[] = {"10.0.0.5"};
+char *nodes[] = {"10.0.0.10"};
 int weights[] = {1};
 static int avg_time = 0;
 static int count =1;
@@ -1944,7 +1944,7 @@ void * clEnqueueMapBuffer (	cl_command_queue command_queue,
  	cl_event *event,
  	cl_int *errcode_ret) {
 	printf("Intercepted clEnqueueMapBuffer call\n");
-	return NULL;
+	return calloc(0,cb);
 	}
 	
 	
@@ -2060,8 +2060,8 @@ cl_int clEnqueueTask (	cl_command_queue command_queue,
 
 }
 
-/*
-void * clEnqueueUnmapMemObject (	cl_command_queue command_queue,
+
+cl_int  clEnqueueUnmapMemObject (	cl_command_queue command_queue,
  	cl_mem memobj,
  	void *mapped_ptr,
  	cl_uint num_events_in_wait_list,
@@ -2071,7 +2071,7 @@ void * clEnqueueUnmapMemObject (	cl_command_queue command_queue,
 	return NULL;
 	
 	}
-*/	
+
 	
 cl_int clEnqueueWaitForEvents (	cl_command_queue command_queue,
  	cl_uint num_events,
