@@ -16,18 +16,23 @@
 // move to config file
 char protocol[] = "tcp";
 char  port[] = "5555";
-char *nodes[] = {"10.0.0.10"};
+char *nodes[] = {"10.0.0.2"};
+int  connects[] = {-1};
 int weights[] = {1};
 static int avg_time = 0;
 static int count =1;
 int perf_count = 0;
 extern const char *__progname;
-
+ void *context = zmq_ctx_new ();
+void *requester = zmq_socket (context, ZMQ_REQ);
 int connect_zmq(char * node, void * requester) {
+	if(connects[0] == -1) {
 	struct timeval cur;
 	char conn_str[50];
 	sprintf(conn_str,"%s://%s:%s",protocol,node,port);
-	return zmq_connect (requester, conn_str);
+	connects[0] = zmq_connect (requester, conn_str);
+	}
+	return connects[0];
 }
 
 long invoke_zmq(void * requester, zmq_msg_t * header, zmq_msg_t* message, zmq_msg_t* send_buffer, zmq_msg_t * reply, zmq_msg_t * reply_buffer){
@@ -119,8 +124,6 @@ cl_int clGetPlatformIDs (cl_uint num_entries, cl_platform_id *platforms, cl_uint
 		ret_pkt.platforms.buff_ptr = NULL;
 
 
-		void *context = zmq_ctx_new ();
-    		void *requester = zmq_socket (context, ZMQ_REQ);
 		connect_zmq(nodes[i], requester);
 		zmq_msg_t header,message,message_buffer,reply,reply_buffer;
 
@@ -155,8 +158,6 @@ cl_int clGetPlatformIDs (cl_uint num_entries, cl_platform_id *platforms, cl_uint
 	 #endif
 			}
 		}
-	zmq_close (requester);
-    	zmq_ctx_destroy (context);
 
 	}
 
@@ -254,8 +255,6 @@ cl_int clGetDeviceIDs (cl_platform_id platform,cl_device_type device_type, cl_ui
 	arg_pkt.platform = (unsigned long)clhandle;
 	arg_pkt.device_type = (int)device_type;
 	
-	void *context = zmq_ctx_new ();
-        void *requester = zmq_socket (context, ZMQ_REQ);
         connect_zmq(node , requester);
         zmq_msg_t header,message,message_buffer,reply,reply_buffer;
 	invocation_header hd;
@@ -284,8 +283,6 @@ cl_int clGetDeviceIDs (cl_platform_id platform,cl_device_type device_type, cl_ui
         ret_pkt.devices.buff_ptr = (char *) malloc(ret_pkt.devices.buff_len);
         memcpy(ret_pkt.devices.buff_ptr, zmq_msg_data(&reply_buffer), ret_pkt.devices.buff_len);
 	cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
-zmq_close (requester);
-    zmq_ctx_destroy (context);
 	#ifdef DEBUG
 	printf("[clGetPlatformIDs interposed] num_devices_found %d\n", ret_pkt.num_devices_found);
 	 #endif
@@ -417,8 +414,6 @@ cl_context clCreateContext (const cl_context_properties *properties,cl_uint num_
 		ret_pkt.devices.buff_ptr = NULL;
 		char *curr_node = it->first;
 
-		void *context = zmq_ctx_new ();
-        	void *requester = zmq_socket (context, ZMQ_REQ);
         	connect_zmq(curr_node , requester);
         	zmq_msg_t header,message,message_buffer,reply,reply_buffer;
         	invocation_header hd;
@@ -442,8 +437,6 @@ cl_context clCreateContext (const cl_context_properties *properties,cl_uint num_
 		context_distr->context_tuples[tuple_counter].clhandle = (cl_context)(ret_pkt.context);
 		context_distr->context_tuples[tuple_counter].node = curr_node;
 
-		zmq_close (requester);
-    		zmq_ctx_destroy (context);
 
 		tuple_counter++;
 		#ifdef DEBUG
@@ -498,8 +491,6 @@ cl_command_queue clCreateCommandQueue (cl_context context, cl_device_id device,c
 	arg_pkt.context = (unsigned long)context_clhandle;
 	arg_pkt.device = (unsigned long)device_clhandle;
 
-	void *context_t = zmq_ctx_new ();
-        void *requester = zmq_socket (context_t, ZMQ_REQ);
         connect_zmq(device_node , requester);
         zmq_msg_t header,message,message_buffer,reply,reply_buffer;
         invocation_header hd;
@@ -518,8 +509,6 @@ cl_command_queue clCreateCommandQueue (cl_context context, cl_device_id device,c
 
         cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
 
-zmq_close (requester);
-    zmq_ctx_destroy (context);
 	#ifdef DEBUG
 	printf("[clCreateCommandQueue interposed] command queue returned %p\n", ret_pkt.command_queue);
 	 #endif
@@ -588,8 +577,6 @@ cl_mem clCreateBuffer (cl_context context, cl_mem_flags flags, size_t size, void
 		}
 
 		ret_pkt.data.buff_ptr = NULL;
-		void *context = zmq_ctx_new ();
-        	void *requester = zmq_socket (context, ZMQ_REQ);
         	connect_zmq(node , requester);
         	zmq_msg_t header,message,message_buffer,reply,reply_buffer;
         	invocation_header hd;
@@ -609,8 +596,6 @@ cl_mem clCreateBuffer (cl_context context, cl_mem_flags flags, size_t size, void
         	ret_pkt.data.buff_ptr = (char *) malloc(ret_pkt.data.buff_len);
         	memcpy(ret_pkt.data.buff_ptr, zmq_msg_data(&reply_buffer), ret_pkt.data.buff_len);
         	cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
-		zmq_close (requester);
-    		zmq_ctx_destroy (context);
 		#ifdef DEBUG
 		printf("[clCreateBuffer interposed] mem returned %p\n", ret_pkt.mem);
 		 #endif
@@ -713,8 +698,6 @@ cl_program clCreateProgramWithSource (cl_context context, cl_uint count, const c
 		arg_pkt.program_str.buff_ptr = program_str;
 		arg_pkt.program_str.buff_len = program_str_offset+1;//The extra 1 accounts for the null char
 
-                void *context = zmq_ctx_new ();
-                void *requester = zmq_socket (context, ZMQ_REQ);
                 connect_zmq(node , requester);
                 zmq_msg_t header,message,message_buffer,reply,reply_buffer;
                 invocation_header hd;
@@ -734,8 +717,6 @@ cl_program clCreateProgramWithSource (cl_context context, cl_uint count, const c
                 ret_pkt.program_str.buff_ptr = (char *) malloc(ret_pkt.program_str.buff_len);
                 memcpy(ret_pkt.program_str.buff_ptr, zmq_msg_data(&reply_buffer), ret_pkt.program_str.buff_len);
                 cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
-zmq_close (requester);
-    zmq_ctx_destroy (context);
 		#ifdef DEBUG
 		printf("[clCreateProgramWithSource interposed] program returned %p\n", ret_pkt.program);
 		 #endif
@@ -831,8 +812,6 @@ cl_int clBuildProgram (cl_program program, cl_uint num_devices, const cl_device_
 			 #endif
 			char *curr_node = program_distr->program_tuples[j].node;
 
-			void *context = zmq_ctx_new ();
-                	void *requester = zmq_socket (context, ZMQ_REQ);
                 	connect_zmq(curr_node , requester);
                 	zmq_msg_t header,message,message_buffer,message_aux_buffer,reply,reply_buffer;
                 	invocation_header hd;
@@ -855,8 +834,6 @@ cl_int clBuildProgram (cl_program program, cl_uint num_devices, const cl_device_
                 	memcpy(ret_pkt.options.buff_ptr, zmq_msg_data(&reply_buffer), ret_pkt.options.buff_len);
                 	cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
 
-zmq_close (requester);
-    zmq_ctx_destroy (context);
 			#ifdef DEBUG
 			printf("[clBuildProgram interposed]clnt_call OK\n");
 			 #endif
@@ -955,8 +932,6 @@ zmq_close (requester);
 		printf("[clBuildProgram interposed] program %p\n", arg_pkt.program);
 		 #endif
 
-		void *context = zmq_ctx_new ();
-                void *requester = zmq_socket (context, ZMQ_REQ);
                 connect_zmq(curr_node , requester);
                 zmq_msg_t header,message,message_buffer,message_aux_buffer,reply,reply_buffer;
                 invocation_header hd;
@@ -979,8 +954,6 @@ zmq_close (requester);
                 memcpy(ret_pkt.options.buff_ptr, zmq_msg_data(&reply_buffer), ret_pkt.options.buff_len);
                 cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
 	
-zmq_close (requester);
-    zmq_ctx_destroy (context);
 		#ifdef DEBUG
                 printf("[clBuildProgram interposed]clnt_call OK\n");
 		 #endif
@@ -1026,8 +999,6 @@ cl_kernel clCreateKernel (cl_program program,const char *kernel_name, cl_int *er
 		arg_pkt.kernel_name.buff_ptr = (char *)kernel_name;
 		arg_pkt.kernel_name.buff_len = strlen(kernel_name);
 
-		void *context = zmq_ctx_new ();
-                void *requester = zmq_socket (context, ZMQ_REQ);
                 connect_zmq(node , requester);
                 zmq_msg_t header,message,message_buffer,reply,reply_buffer;
                 invocation_header hd;
@@ -1048,8 +1019,6 @@ cl_kernel clCreateKernel (cl_program program,const char *kernel_name, cl_int *er
                 memcpy(ret_pkt.kernel_name.buff_ptr, zmq_msg_data(&reply_buffer), ret_pkt.kernel_name.buff_len);
                 cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
 
-zmq_close (requester);
-    zmq_ctx_destroy (context);
 		#ifdef DEBUG
 		printf("[clCreateKernel interposed] kernel returned %p\n", ret_pkt.kernel);
 		 #endif
@@ -1175,8 +1144,6 @@ cl_int clSetKernelArg (cl_kernel kernel, cl_uint arg_index,size_t arg_size, cons
 		}
 
 		ret_pkt.plain_old_data.buff_ptr = NULL;
-		void *context = zmq_ctx_new ();
-                void *requester = zmq_socket (context, ZMQ_REQ);
                 connect_zmq(node , requester);
                 zmq_msg_t header,message,message_buffer,reply,reply_buffer;
                 invocation_header hd;
@@ -1197,8 +1164,6 @@ cl_int clSetKernelArg (cl_kernel kernel, cl_uint arg_index,size_t arg_size, cons
                 memcpy(ret_pkt.plain_old_data.buff_ptr, zmq_msg_data(&reply_buffer), ret_pkt.plain_old_data.buff_len);
                 cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
 
-zmq_close (requester);
-    zmq_ctx_destroy (context);
 		#ifdef DEBUG
                 printf("[clSetKernelArg interposed]clnt_call OK\n");
 		 #endif
@@ -1266,8 +1231,6 @@ cl_int clEnqueueWriteBuffer (cl_command_queue command_queue, cl_mem buffer,cl_bo
 
 	ret_pkt.data.buff_ptr = NULL;
 	//
-	void *context = zmq_ctx_new ();
-        void *requester = zmq_socket (context, ZMQ_REQ);
         connect_zmq(command_queue_node , requester);
         zmq_msg_t header,message,message_buffer,reply,reply_buffer;
         invocation_header hd;
@@ -1288,8 +1251,6 @@ cl_int clEnqueueWriteBuffer (cl_command_queue command_queue, cl_mem buffer,cl_bo
         memcpy(ret_pkt.data.buff_ptr, zmq_msg_data(&reply_buffer), ret_pkt.data.buff_len);
         cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
 
-zmq_close (requester);
-    zmq_ctx_destroy (context);
 	#ifdef DEBUG
 	printf("[clEnqueueWriteBuffer interposed] err returned %d\n", ret_pkt.err);
 	 #endif
@@ -1355,8 +1316,6 @@ cl_int clEnqueueReadBuffer (cl_command_queue command_queue, cl_mem buffer,cl_boo
 
 	ret_pkt.data.buff_ptr = NULL;
 
-	void *context = zmq_ctx_new ();
-        void *requester = zmq_socket (context, ZMQ_REQ);
         connect_zmq(command_queue_node , requester);
         zmq_msg_t header,message,message_buffer,reply,reply_buffer;
         invocation_header hd;
@@ -1375,8 +1334,6 @@ cl_int clEnqueueReadBuffer (cl_command_queue command_queue, cl_mem buffer,cl_boo
                 //Todo free
         memcpy(ptr, zmq_msg_data(&reply_buffer), ret_pkt.data.buff_len);
         cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
-zmq_close (requester);    
-zmq_ctx_destroy (context);
 	#ifdef DEBUG
 	printf("[clEnqueueReadBuffer interposed] err returned %d\n", ret_pkt.err);
 	 #endif
@@ -1461,8 +1418,6 @@ perf_count++;
 	ret_pkt.global_size.buff_ptr = NULL;	
 	ret_pkt.local_size.buff_ptr = NULL;	
 
-	 void *context = zmq_ctx_new ();
-         void *requester = zmq_socket (context, ZMQ_REQ);
          connect_zmq(command_queue_node , requester);
          zmq_msg_t header,message,message_buffer,message_aux_buffer,message_aux_buffer2,reply,reply_buffer;
          invocation_header hd;
@@ -1500,8 +1455,6 @@ perf_count++;
          memcpy(ret_pkt.global_offset.buff_ptr, zmq_msg_data(&reply_buffer), ret_pkt.global_offset.buff_len);
          cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
 
-zmq_close (requester);
-    zmq_ctx_destroy (context);
 	#ifdef DEBUG
 	printf("[clEnqueueNDRangeKernel interposed] err returned %d\n", ret_pkt.err);
 	 #endif
@@ -1672,8 +1625,6 @@ cl_sampler clCreateSampler (	cl_context context,
 	arg_pkt.data.buff_ptr = "\0";
 	arg_pkt.data.buff_len = sizeof(char);
 	
-	void *context = zmq_ctx_new ();
-        void *requester = zmq_socket (context, ZMQ_REQ);
         connect_zmq(node , requester);
         zmq_msg_t header,message,message_buffer,reply,reply_buffer;
         invocation_header hd;
@@ -1693,8 +1644,6 @@ cl_sampler clCreateSampler (	cl_context context,
 	mem_distr->mem_tuples[0].clhandle = ret_pkt.buffer;
 	//printf("Got back cm_mem %d\n",ret_pkt.buffer);
         cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
-	zmq_close (requester);
-    	zmq_ctx_destroy (context); 
 	if(errcode_ret != NULL) {
 		errcode_ret = CL_SUCCESS;
 	}	
@@ -1882,8 +1831,6 @@ cl_int clEnqueueFillBuffer (	cl_command_queue  command_queue ,
 
 	ret_pkt.data.buff_ptr = NULL;
 	//
-	void *context = zmq_ctx_new ();
-        void *requester = zmq_socket (context, ZMQ_REQ);
         connect_zmq(command_queue_node , requester);
         zmq_msg_t header,message,message_buffer,reply,reply_buffer;
         invocation_header hd;
@@ -1904,8 +1851,6 @@ cl_int clEnqueueFillBuffer (	cl_command_queue  command_queue ,
         memcpy(ret_pkt.data.buff_ptr, zmq_msg_data(&reply_buffer), ret_pkt.data.buff_len);
         cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
 
-	zmq_close (requester);
-    	zmq_ctx_destroy (context);
 	#ifdef DEBUG
 	printf("[clEnqueueFillBuffer interposed] err returned %d\n", ret_pkt.err);
 	 #endif
@@ -2133,8 +2078,6 @@ cl_int clFlush (cl_command_queue command_queue) {
 	arg_pkt.data.buff_ptr = "\0";
 	arg_pkt.data.buff_len = sizeof(char);
 	ret_pkt.data.buff_ptr = NULL;
-	void *context = zmq_ctx_new ();
-        void *requester = zmq_socket (context, ZMQ_REQ);
         connect_zmq(node , requester);
         zmq_msg_t header,message,message_buffer,reply,reply_buffer;
 	invocation_header hd;
@@ -2151,8 +2094,6 @@ cl_int clFlush (cl_command_queue command_queue) {
 	ret_pkt = * (flush_*) zmq_msg_data(&reply);
 
 	cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
-	zmq_close (requester);
-        zmq_ctx_destroy (context);
 	
 	return CL_SUCCESS;
 	
@@ -2259,8 +2200,6 @@ cl_int clGetKernelWorkGroupInfo (	cl_kernel kernel,
 	arg_pkt.param_name = param_name;
 	arg_pkt.param_value_size = param_value_size;
 	
-	void *context = zmq_ctx_new ();
-        void *requester = zmq_socket (context, ZMQ_REQ);
         connect_zmq(node , requester);
         zmq_msg_t header,message,message_buffer,reply,reply_buffer;
 	invocation_header hd;
@@ -2283,8 +2222,6 @@ cl_int clGetKernelWorkGroupInfo (	cl_kernel kernel,
 		memcpy(param_value, zmq_msg_data(&reply_buffer), ret_pkt.param_value.buff_len);
 	}
 	cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
-	zmq_close (requester);
-        zmq_ctx_destroy (context);
 	return CL_SUCCESS;
 	
 	}
@@ -2332,8 +2269,6 @@ cl_int clGetPlatformInfo(	cl_platform_id platform,
 	arg_pkt.platform = clhandle;
 	arg_pkt.param_name = param_name;
 	arg_pkt.param_value_size = param_value_size;
-	void *context = zmq_ctx_new ();
-        void *requester = zmq_socket (context, ZMQ_REQ);
         connect_zmq(node , requester);
         zmq_msg_t header,message,message_buffer,reply,reply_buffer;
 	invocation_header hd;
@@ -2356,8 +2291,6 @@ cl_int clGetPlatformInfo(	cl_platform_id platform,
 		memcpy(param_value, zmq_msg_data(&reply_buffer), ret_pkt.param_value.buff_len);
 	}
 	cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
-	zmq_close (requester);
-        zmq_ctx_destroy (context);
 	return CL_SUCCESS;
 }
 
@@ -2389,8 +2322,6 @@ cl_int clGetDeviceInfo(	cl_device_id device,
 	arg_pkt.param_name = param_name;
 	arg_pkt.param_value_size = param_value_size;
 	
-	void *context = zmq_ctx_new ();
-        void *requester = zmq_socket (context, ZMQ_REQ);
         connect_zmq(node , requester);
         zmq_msg_t header,message,message_buffer,reply,reply_buffer;
 	invocation_header hd;
@@ -2413,8 +2344,6 @@ cl_int clGetDeviceInfo(	cl_device_id device,
 		memcpy(param_value, zmq_msg_data(&reply_buffer), ret_pkt.param_value.buff_len);
 	}
 	cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
-	zmq_close (requester);
-        zmq_ctx_destroy (context);
 	return CL_SUCCESS;
 	
 	}
@@ -2445,8 +2374,6 @@ cl_int clGetProgramInfo (	cl_program program,
 	arg_pkt.param_name = param_name;
 	arg_pkt.param_value_size = param_value_size;
 	
-	void *context = zmq_ctx_new ();
-        void *requester = zmq_socket (context, ZMQ_REQ);
         connect_zmq(node , requester);
         zmq_msg_t header,message,message_buffer,reply,reply_buffer;
 	invocation_header hd;
@@ -2469,8 +2396,6 @@ cl_int clGetProgramInfo (	cl_program program,
 		memcpy(param_value, zmq_msg_data(&reply_buffer), ret_pkt.param_value.buff_len);
 	}
 	cleanup_messages(&header, &message, &message_buffer, &reply, &reply_buffer);
-	zmq_close (requester);
-        zmq_ctx_destroy (context);
 	return CL_SUCCESS;
 	
 	}
