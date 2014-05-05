@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include "interposer.h"
 #include "GPUPerfAPI.h"
+#include <sys/time.h>
 #include<iostream>
 #define DEBUG 1
 
@@ -82,7 +83,7 @@ for ( gpa_uint32 counter = 0 ; counter < count ; counter++ )
                         }
                         else
                         {
-                                assert(false);
+                                //assert(false);
                         }
                 }
         }
@@ -140,7 +141,7 @@ float perf() {
         GPA_EnableAllCounters();
 /*Step 5: Create program object */
         const char *source = prg;
-        cout << source << endl;
+      //  cout << source << endl;
         size_t sourceSize[] = {strlen(source)};
         cl_program program = clCreateProgramWithSource(context, 1, &source, sourceSize, NULL);
 
@@ -259,7 +260,7 @@ void clGetPlatformIDs_server(get_platform_ids_ *argp, get_platform_ids_ *retp){
 		retp->err |= err;
 
 		for(int i=0; i<num_platforms; i++){
-			//fprintf(stderr,"[clGetPlatformIDs_server] platforms[%d]=%p\n",i, platforms[i]);
+			fprintf(stderr,"[clGetPlatformIDs_server] platforms[%d]=%p\n",i, platforms[i]);
 		}
 
 		retp->platforms.buff_ptr = (char *)platforms;
@@ -277,8 +278,10 @@ void clGetPlatformInfo_server(get_platform_info_ *argp, get_platform_info_ *retp
 	char * profile = NULL;
 	fprintf(stderr,"clGetPlatformInfo_server platform id = %d param name = %d \n",argp->platform,argp->param_name);
 	if(argp->is_buff_null) {
+		fprintf(stderr,"reached first if\n");
 		clGetPlatformInfo(argp->platform, argp->param_name, NULL, NULL, &size);
 	} else {
+		fprintf(stderr,"reached second if\n");
 		profile = (char * ) malloc(argp->param_value_size);
 		clGetPlatformInfo(argp->platform, argp->param_name, argp->param_value_size, profile, NULL);
 	}
@@ -798,7 +801,7 @@ main() {
     void *responder = zmq_socket (context, ZMQ_REP);
 
 //TODO cleanup
-    int rc = zmq_bind (responder, "tcp://10.0.0.5:5555");
+    int rc = zmq_bind (responder, "tcp://10.0.0.2:5555");
     assert (rc == 0);
 
 	while (1) {
@@ -991,7 +994,17 @@ main() {
 						arg_pkt = * (get_device_ids_*) zmq_msg_data(&message);
 						zmq_msg_recv(&message_buffer, responder, 0);
 						arg_pkt.devices.buff_ptr = (char *) zmq_msg_data(&message_buffer);
+						int begin,end;
+						struct timeval cur;
+						gettimeofday(&cur,NULL);
+						begin =cur.tv_sec*1000000 + cur.tv_usec;
 						clGetDeviceIDs_server(&arg_pkt, &ret_pkt);
+						ret_pkt.perf = perf();
+						cout << "perf:" << ret_pkt.perf <<endl;
+						gettimeofday(&cur,NULL);
+						end = cur.tv_sec*1000000 + cur.tv_usec;
+						cout << "time taken :" << end - begin;
+						ret_pkt.time_server = end - begin;
 						zmq_msg_init_size(&reply, sizeof(ret_pkt));
 						zmq_msg_init_size(&reply_buffer,ret_pkt.devices.buff_len);
 						memcpy(zmq_msg_data(&reply), &ret_pkt, sizeof(ret_pkt));
@@ -1233,6 +1246,10 @@ main() {
 							arg_pkt.global_size.buff_ptr = (char *) zmq_msg_data(&message_buffer_aux);
 							arg_pkt.local_size.buff_ptr = (char *) zmq_msg_data(&message_buffer_aux2);
 						 	clEnqueueNDRangeKernel_server(&arg_pkt, &ret_pkt);
+							if(arg_pkt.do_perf) {
+							ret_pkt.perf = perf();
+                                                	cout << "perf:" << ret_pkt.perf <<endl;	
+							}
 							zmq_msg_init_size(&reply, sizeof(ret_pkt));
 							zmq_msg_init_size(&reply_buffer,ret_pkt.global_offset.buff_len);
 							memcpy(zmq_msg_data(&reply), &ret_pkt, sizeof(ret_pkt));
